@@ -1,0 +1,68 @@
+name: "🧩 Module Task"
+description: "Create a new module or modify an existing one in the Tiny Tapeout AES/HASH project"
+title: "[Module] <short-title>"
+labels: ["area:rtl", "status:todo"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## 🧩 Module Task
+        Describe the Verilog module or feature to be added. Each module should be self-contained and synthesizable.
+  - type: input
+    id: module_name
+    attributes:
+      label: "Module Name"
+      description: "Name of the module (e.g. aes_sbox, hash_round)"
+      placeholder: "aes_sbox"
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: "Summary"
+      description: "What does this module do and why is it needed?"
+      placeholder: "Implements AES S-box lookup table used in encryption rounds."
+    validations:
+      required: true
+  - type: textarea
+    id: interface
+    attributes:
+      label: "Port Interface"
+      description: "List the input/output ports with bit widths and short descriptions."
+      placeholder: |
+        ```
+        input  wire        clk,
+        input  wire        rst_n,
+        input  wire [7:0]  din,
+        output wire [7:0]  dout
+        ```
+  - type: textarea
+    id: requirements
+    attributes:
+      label: "Functional Requirements"
+      description: "Define the logic behavior, latency, and timing expectations."
+      placeholder: "Combinational mapping with 1-cycle latency after register stage."
+  - type: textarea
+    id: test_plan
+    attributes:
+      label: "Test Plan"
+      description: "Describe how this module will be tested and validated."
+      placeholder: |
+        - Create `tb_aes_sbox.v`
+        - Compare outputs with golden AES S-box table
+        - Simulate with Icarus/Verilator and cocotb
+  - type: input
+    id: owner
+    attributes:
+      label: "Assignee (GitHub username)"
+      description: "Who will develop this module?"
+  - type: checkboxes
+    id: acceptance
+    attributes:
+      label: "Acceptance Criteria"
+      options:
+        - label: "Verilog module added to `src/`"
+        - label: "Testbench added to `test/`"
+        - label: "Module passes simulation"
+        - label: "`info.yaml` updated with source_files"
+        - label: "Documentation updated in `docs/info.md`"
