@@ -13,12 +13,12 @@
 // will be writing test cases for some of the functionality, but i wont be able to do full tests until sbox is implemented
 // if you do notice any flaws with my implementation please lmk!
 
-module roundkeygen (
+module roundkeygen ( 
     input  wire       clk,      
     input  wire       rst_n,
-    input  wire       [255:0] key,
-    input  wire       start,
-    output reg       [127:0] round_key_out,
+    input  wire       [255:0] init_key,
+    input  wire       advance,
+    output reg       [127:0] round_key,
     output reg       round_key_valid
 
 
@@ -50,9 +50,9 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         case (phase)
             IDLE: begin
-                if (start) begin
+                if (advance) begin
                     for (i = 0; i < 8; i = i + 1)
-                        buf[i] <= key[255 - 32*i -: 32];
+                        buf[i] <= init_key[255 - 32*i -: 32];
                     count <= 8;
                     round_key_valid <= 0;
                     phase <= EXPAND;
@@ -78,7 +78,7 @@ always @(posedge clk or negedge rst_n) begin
 
 
                 if (count % 4 == 0) begin
-                    round_key_out <= {buf[4], buf[5], buf[6], buf[7]};
+                    round_key <= {buf[4], buf[5], buf[6], buf[7]};
                     round_key_valid <= 1;
                 end
                 else begin
