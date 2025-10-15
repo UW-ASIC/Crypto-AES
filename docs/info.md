@@ -11,6 +11,9 @@ You can also include images in this folder and reference them in the markdown. E
 
 Explain how your project works
 
+### SubBytes
+This step replaces every byte in the AES state with another value according to a fixed substitution table called the [S-box](https://en.wikipedia.org/wiki/Rijndael_S-box). It’s what gives AES its “nonlinear” behavior.
+
 ## How to test
 
 Explain how to use your project
