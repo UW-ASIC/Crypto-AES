@@ -12,7 +12,7 @@ You can also include images in this folder and reference them in the markdown. E
 Explain how your project works
 
 ### Round Counter
-The RoundCounter keeps track of which round the algorithm is on and signals when the final round has been reached. AES runs a different number of rounds depending on key size (10, 12, or 14). For us, we are using AES-256 so we will be doing 14 rounds.
+The RoundCounter keeps track of which round the algorithm is on and signals when the final round has been reached. AES runs a different number of rounds depending on key size (10, 12, or 14). For us, we are using AES-256 so we will be doing 14 rounds. When the counter increments past 14, it will automatically reset to 0.
 
 ## How to test
 
