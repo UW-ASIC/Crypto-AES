@@ -1,20 +1,36 @@
-<!---
-
-This file is used to generate your project datasheet. Please fill in the information below and delete any unused
-sections.
-
-You can also include images in this folder and reference them in the markdown. Each image must be less than
-512 kb in size, and the combined size of all images must be less than 1 MB.
--->
+# MixColumns Module
 
 ## How it works
 
-Explain how your project works
+`MixColumns` implements the AES transformation that mixes each column of the 128-bit AES state using arithmetic in **GF(2⁸)**.  
+Each column is treated as a 4-byte vector and multiplied by a fixed polynomial matrix:
+
+02 03 01 01  
+01 02 03 01  
+01 01 02 03  
+03 01 01 02  
+
+This operation diffuses the influence of every input byte across the entire column, improving resistance to differential and linear attacks.  
+In the **final AES round**, this transformation is bypassed using the `final_round` signal, as required by the AES standard.
+
+---
+
+### Port Interface
+
+| Signal        | Direction | Width   | Description                                  |
+|---------------|------------|----------|----------------------------------------------|
+| `state_in`    | Input      | 128 bit | AES state input (column-major order)         |
+| `final_round` | Input      | 1 bit   | 1 = bypass MixColumns (final round)          |
+| `state_out`   | Output     | 128 bit | Mixed or bypassed AES state output           |
+
+---
 
 ## How to test
 
-Explain how to use your project
+1. **Testbench:** `tb_MixColumns.v` located in `/test/`  
+2. **RTL module:** `MixColumns.v` located in `/src/`
+3. **Simulation example (Icarus Verilog):**
 
-## External hardware
-
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+   ```bash
+   iverilog -o tb_MixColumns.vvp src/MixColumns.v test/tb_MixColumns.v
+   vvp tb_MixColumns.vvp
