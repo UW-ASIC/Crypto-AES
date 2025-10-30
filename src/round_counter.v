@@ -22,16 +22,16 @@ module round_counter (
         next_is_final = 0;
         next_done = 0;
 
-        if (round + 1 == 4'b1111) begin
-            next_round = 0;
-            next_done = 1;
-        end else begin
-            if (advance) begin
+        if (advance) begin
+            if (round + 1 == 4'b1111) begin
+                next_round = 0;
+                next_done = 1;
+            end else begin
                 next_round = round + 1;
-            end
 
-            if (round + 1 == 4'b1110) begin
-                next_is_final = 1;
+                if (round + 1 == 4'b1110) begin
+                    next_is_final = 1;
+                end
             end
         end
     end

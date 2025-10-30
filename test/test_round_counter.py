@@ -64,14 +64,21 @@ async def test_round_counter(dut):
 
     dut._log.info("Test counter stops incrementing when `advance` goes low")
     
-    # `advance` is still high, let counter increment for a few cycles
-    await ClockCycles(dut.clk, 5)
+    # `advance` is still high, let counter increment until `round` is 13
+    await ClockCycles(dut.clk, 13)
 
     dut.advance.value = 0
-    # Wait for `advance` to stabilize
+    # Wait for `advance` to stabilize, round should increment to 14 in the meanwhile
     await ClockCycles(dut.clk, 1)
 
     last_updated_value = dut.round.value
 
-    await ClockCycles(dut.clk, 5)
+    assert dut.is_final.value == 1, "is_final flag low when it should be high"
+
+    # If counter failed to stop incrementing, `done` flag would be high
+    await ClockCycles(dut.clk, 1)
+    assert dut.done.value == 0, "done flag high when it should be low"
+
+    await ClockCycles(dut.clk, 10)
     assert dut.round.value == last_updated_value, "Counter continued incrementing despite `advance` being low"
+    
