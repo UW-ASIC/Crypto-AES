@@ -3,38 +3,59 @@
 
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles
-
+from cocotb.triggers import RisingEdge, Timer
 
 @cocotb.test()
-async def test_project(dut):
-    dut._log.info("Start")
+async def test_roundkeygen(dut):
+    """Test AES round key generator"""
 
-    # Set the clock period to 10 us (100 KHz)
-    clock = Clock(dut.clk, 10, units="us")
+    dut._log.info("=== Starting RoundKeyGen test ===")
+
+    # 10us clock
+    clock = Clock(dut.clk, 10, unit="us")
     cocotb.start_soon(clock.start())
 
-    # Reset
-    dut._log.info("Reset")
-    dut.ena.value = 1
-    dut.ui_in.value = 0
-    dut.uio_in.value = 0
+    # reset phase
+    dut._log.info("Applying reset")
     dut.rst_n.value = 0
-    await ClockCycles(dut.clk, 10)
+    dut.advance.value = 0
+    dut.init_key.value = 0
+    await Timer(100, unit="ns")
     dut.rst_n.value = 1
+    await RisingEdge(dut.clk)
+    dut._log.info("Reset released")
 
-    dut._log.info("Test project behavior")
+    # load initial key (random value for now)
+    init_key = int(
+        "603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4", 16
+    )
+    dut.init_key.value = init_key
 
-    # Set the input values you want to test
-    dut.ui_in.value = 20
-    dut.uio_in.value = 30
+    # pulse 'advance'
+    dut.advance.value = 1
+    await RisingEdge(dut.clk)
+    await RisingEdge(dut.clk)
+    dut.advance.value = 0
 
-    # Wait for one clock cycle to see the output values
-    await ClockCycles(dut.clk, 1)
+    # generated round keys
+    valid_rounds = 0
+    max_cycles = 200  # safety limit
+    dut._log.info("Monitoring round keys...")
 
-    # The following assersion is just an example of how to check the output values.
-    # Change it to match the actual expected output of your module:
-    assert dut.uo_out.value == 50
+    for _ in range(max_cycles):
+        await RisingEdge(dut.clk)
+        if dut.round_key_valid.value:
+            val = dut.round_key.value
+            s = str(val).lower()
+            if "x" in s or "z" in s:
+                dut._log.warning(f"Round key {valid_rounds}: contains X {val}")
+            else:
+                key_hex = f"{val.to_unsigned():032x}"
+                dut._log.info(f"Round key {valid_rounds}: {key_hex}")
+            valid_rounds += 1
 
-    # Keep testing the module by changing the input values, waiting for
-    # one or more clock cycles, and asserting the expected output values.
+        if valid_rounds >= 15:
+            break
+
+    assert valid_rounds > 0, "No valid round keys produced!"
+    dut._log.info(f"Test completed successfully — {valid_rounds} valid round keys observed.")
