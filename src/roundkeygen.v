@@ -76,15 +76,19 @@ always @(posedge clk or negedge rst_n) begin
                     for (i = 0; i < 8; i = i + 1) begin
                         key_buf[i] <= init_key[255 - (32*i) -: 32];
                     end
-                    round_key <= {init_key[255:128]};
-                    round_key_valid <= 1;
-                    count <= 8;
+                    count <= 0;
                     phase <= EXPAND;
                 end
             end
 
 
             EXPAND: begin
+                if (count == 0) begin 
+                    round_key <= init_key[255:128];
+                    round_key_valid <= 1;
+                    count <= 4;
+                end
+                
                 if (count < 67) begin 
                     if (count % 8 == 0) begin
                         new_word <= key_buf[0] ^ subword(rotword(key_buf[7])) ^ rcon [count/8];

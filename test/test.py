@@ -34,8 +34,8 @@ async def test_roundkeygen(dut):
     # pulse 'advance'
     dut.advance.value = 1
     await RisingEdge(dut.clk)
-    await RisingEdge(dut.clk)
     dut.advance.value = 0
+    
 
     # generated round keys
     valid_rounds = 0
