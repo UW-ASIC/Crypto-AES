@@ -5,7 +5,7 @@
 SIM ?= icarus
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
-PROJECT_SOURCES = project.v
+PROJECT_SOURCES = project.v shiftRows.v
 
 ifneq ($(GATES),yes)
 
@@ -38,6 +38,7 @@ VERILOG_SOURCES += $(PWD)/tb.v
 TOPLEVEL = tb
 
 # MODULE is the basename of the Python test file
+# To test ShiftRows: make MODULE=test_shiftRows
 MODULE = test
 
 # include cocotb's make rules to take care of the simulator setup

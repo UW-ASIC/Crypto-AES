@@ -46,4 +46,13 @@ module tb ();
       .rst_n  (rst_n)     // not reset
   );
 
+  // For testing individual modules like ShiftRows
+  reg [127:0] a;
+  wire [127:0] b;
+
+  shiftRows shiftrows_inst (
+      .a(a),
+      .b(b)
+  );
+
 endmodule
