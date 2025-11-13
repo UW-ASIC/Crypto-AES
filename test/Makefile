@@ -5,7 +5,11 @@
 SIM ?= icarus
 TOPLEVEL_LANG ?= verilog
 SRC_DIR = $(PWD)/../src
-PROJECT_SOURCES = project.v
+PROJECT_SOURCES = project.v key_loader.v
+
+# Set library path for cocotb on Alpine Linux
+export PYTHONHOME := $(shell python3 -c "import sys; print(sys.prefix)")
+export LD_LIBRARY_PATH := $(shell python3 -c "import sysconfig; print(sysconfig.get_config_var('LIBDIR'))"):/home/vscode/.local/lib/python3.12/site-packages/cocotb/libs
 
 ifneq ($(GATES),yes)
 
@@ -33,12 +37,11 @@ endif
 # Allow sharing configuration between design and testbench via `include`:
 COMPILE_ARGS 		+= -I$(SRC_DIR)
 
-# Include the testbench sources:
-VERILOG_SOURCES += $(PWD)/tb.v
-TOPLEVEL = tb
+# TOPLEVEL is the name of the toplevel module in your Verilog or VHDL file
+TOPLEVEL = key_loader
 
 # MODULE is the basename of the Python test file
-MODULE = test
+MODULE = key_loader_tb
 
 # include cocotb's make rules to take care of the simulator setup
 include $(shell cocotb-config --makefiles)/Makefile.sim

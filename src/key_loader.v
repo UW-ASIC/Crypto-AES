@@ -17,10 +17,16 @@ module key_loader(
         end else begin
             if (valid && !ready) begin
                 key_out <= {key_out[247:0], din};
-                byte_count <= byte_count + 1'b1;
                 if (byte_count == 6'd31) begin
-                    ready <= 1'b1;
+                // 32nd byte arrived this cycle: assert ready and reset counter
+                    ready      <= 1'b1;
+                    byte_count <= 6'd0;
+                end else begin
+                    byte_count <= byte_count + 6'd1;
                 end
+            end else begin
+                // ensure ready is only one clock cycle
+                ready <= 1'b0;
             end
         end
     end
