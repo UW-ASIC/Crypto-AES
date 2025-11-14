@@ -1,0 +1,47 @@
+tested against https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197-upd1.pdf
+
+$ make sim=ICARUS
+rm -f results.xml
+"make" -f Makefile results.xml
+make[1]: Entering directory '/c/Users/jocr2/Documents/GitHub/Crypto-AES/test'
+C:/msys64/mingw64/lib/python3.12/site-packages/cocotb_tools/makefiles/simulators/Makefile.icarus:66: Using MODULE is deprecated, please use COCOTB_TEST_MODULES instead.
+rm -f results.xml
+COCOTB_TEST_MODULES=test COCOTB_TESTCASE= COCOTB_TEST_FILTER= COCOTB_TOPLEVEL=roundkeygen TOPLEVEL_LANG=verilog \
+         /mingw64/bin/vvp -M C:/msys64/mingw64/lib/python3.12/site-packages/cocotb/libs -m libcocotbvpi_icarus   sim_build/rtl/sim.vvp  -none
+     -.--ns INFO     gpi                                ..mbed/gpi_embed.cpp:93   in _embed_init_python              Using Python 3.12.11 interpreter at C:/msys64/mingw64/bin/python.exe
+     -.--ns INFO     gpi                                ../gpi/GpiCommon.cpp:79   in gpi_print_registered_impl       VPI registered
+     0.00ns INFO     cocotb                             Running on Icarus Verilog version 12.0 (stable)
+     0.00ns INFO     cocotb                             Seeding Python random module with 1763080536
+     0.00ns INFO     cocotb                             Initialized cocotb v2.0.0 from C:/msys64/mingw64/lib/python3.12/site-packages/cocotb
+     0.00ns INFO     cocotb.regression                  pytest not found, install it to enable better AssertionError messages
+     0.00ns INFO     cocotb                             Running tests
+     0.00ns INFO     cocotb.regression                  running test.test_roundkeygen (1/1)
+                                                            Test AES round key generator
+     0.00ns INFO     cocotb.roundkeygen                 === Starting RoundKeyGen test ===
+     0.00ns INFO     cocotb.roundkeygen                 Applying reset
+ 10000.00ns INFO     cocotb.roundkeygen                 Reset released
+ 20000.00ns INFO     cocotb.roundkeygen                 Monitoring round keys...
+ 40000.00ns INFO     cocotb.roundkeygen                 Round key 0: 603deb1015ca71be2b73aef0857d7781
+ 50000.00ns INFO     cocotb.roundkeygen                 Round key 1: 1f352c073b6108d72d9810a30914dff4
+ 90000.00ns INFO     cocotb.roundkeygen                 Round key 2: 9ba354118e6925afa51a8b5f2067fcde
+130000.00ns INFO     cocotb.roundkeygen                 Round key 3: a8b09c1a93d194cdbe49846eb75d5b9a
+170000.00ns INFO     cocotb.roundkeygen                 Round key 4: d59aecb85bf3c917fee94248de8ebe96
+210000.00ns INFO     cocotb.roundkeygen                 Round key 5: b5a9328a2678a647983122292f6c79b3
+250000.00ns INFO     cocotb.roundkeygen                 Round key 6: 812c81addadf48ba24360af2fab8b464
+290000.00ns INFO     cocotb.roundkeygen                 Round key 7: 98c5bfc9bebd198e268c3ba709e04214
+330000.00ns INFO     cocotb.roundkeygen                 Round key 8: 68007bacb2df331696e939e46c518d80
+370000.00ns INFO     cocotb.roundkeygen                 Round key 9: c814e20476a9fb8a5025c02d59c58239
+410000.00ns INFO     cocotb.roundkeygen                 Round key 10: de1369676ccc5a71fa2563959674ee15
+450000.00ns INFO     cocotb.roundkeygen                 Round key 11: 5886ca5d2e2f31d77e0af1fa27cf73c3
+490000.00ns INFO     cocotb.roundkeygen                 Round key 12: 749c47ab18501ddae2757e4f7401905a
+530000.00ns INFO     cocotb.roundkeygen                 Round key 13: cafaaae3e4d59b349adf6acebd10190d
+570000.00ns INFO     cocotb.roundkeygen                 Round key 14: fe4890d1e6188d0b046df344706c631e
+570000.00ns INFO     cocotb.roundkeygen                 Test completed successfully — 15 valid round keys observed.
+570000.00ns INFO     cocotb.regression                  test.test_roundkeygen passed
+570000.00ns INFO     cocotb.regression                  **************************************************************************************
+                                                        ** TEST                          STATUS  SIM TIME (ns)  REAL TIME (s)  RATIO (ns/s) **
+                                                        **************************************************************************************
+                                                        ** test.test_roundkeygen          PASS      570000.00           0.02   35718603.38  **
+                                                        **************************************************************************************
+                                                        ** TESTS=1 PASS=1 FAIL=0 SKIP=0             570000.00           0.02   28499347.70  **
+                                                        **************************************************************************************
