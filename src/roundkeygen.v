@@ -18,9 +18,9 @@ reg [3:0]     i;
 
 localparam  IDLE = 1'd0;
 localparam  EXPAND = 1'd1;
-reg phase;
+//localparam  WAIT = 1'd2;
+reg phase; // if using WAIT phase change to [1:0] reg
 
-// key register array
 reg [31:0] key_buf [7:0];
 reg [31:0] new_word;
 
@@ -32,8 +32,6 @@ reg [31:0] new_word;
         end
     endfunction
             
-
-// run through sbox
     function automatic [31:0] subword(input [31:0] word);
         begin
             subword[31:24] = sbox(word[31:24]);
@@ -49,8 +47,6 @@ reg [31:0] new_word;
         end 
     endfunction
 
-
-// xor round constant
     wire [31:0] rcon [7:0];
 
     assign rcon[0] = 32'h01000000;
@@ -113,6 +109,7 @@ always @(posedge clk or negedge rst_n) begin
                     if (count % 4 == 0) begin
                         round_key <= {key_buf[4], key_buf[5], key_buf[6], key_buf[7]};
                         round_key_valid <= 1;
+                        //phase <= WAIT;
                     end
                     else begin
                         round_key_valid <= 0;
@@ -125,6 +122,11 @@ always @(posedge clk or negedge rst_n) begin
                 end
 
             end
+        // WAIT: begin
+        //  if (advance == 1) begin 
+        //      phase <= EXPAND;
+        //  end
+        //  end  
         endcase
     end
 end 
