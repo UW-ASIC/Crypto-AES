@@ -2,62 +2,61 @@
 project:
   title: "AES-256 Core"
   author: "who cares!!!!!"
-  discord:      ""      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
+  discord: ""      # optional
   description: "Tiny Tapeout project containing a serialized AES-256 core with shared S-box and bytewise load."
-  language:     "Verilog" # other examples include SystemVerilog, Amaranth, VHDL, etc
-  clock_hz:     0       # Clock frequency in Hz (or 0 if not applicable)
-
+  language: "Verilog"
+  clock_hz: 0      # 0 = not specifying a fixed frequency
 
   # How many tiles your design occupies? A single tile is about 167x108 uM.
   tiles: "1x1"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2 or 8x2
-  # Your top module name must start with "tt_um_". Make it unique by including your github username:
-  top_module: "tt_um_uwasic_onboarding_aes" 
-  # List your project's source files here.
-  # Source files must be in ./src and you must list each source file separately, one per line.
-  # Don't forget to also update `PROJECT_SOURCES` in test/Makefile.
+
+  # Your top module name must start with "tt_um_..."
+  top_module: "tt_um_uwasic_onboarding_aes"
+
+  # List your project's source files here (relative to ./src)
   source_files:
     - "AES.v"
     - "aes_core_rs.v"
     - "sbox.v"
     - "sub_bytes.v"
     - "roundkey_gen.v"
-    - "mix_columns.v"  
-    - "shift_rows.v" 
+    - "mix_columns.v"
+    - "shift_rows.v"
     - "project.v"
 
-
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
-# This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
+# These names are just for the datasheet / website – they don't affect synthesis.
 pinout:
-  # Inputs
-  ui[0]: ""
-  ui[1]: ""
-  ui[2]: ""
-  ui[3]: ""
-  ui[4]: ""
-  ui[5]: ""
-  ui[6]: ""
-  ui[7]: ""
+  # Inputs (ui_in[7:0])
+  ui[0]: "BUS_VALID_IN"      # maps to aes.valid_in
+  ui[1]: "BUS_DATA_READY"    # host says it can accept data (to aes.data_ready)
+  ui[2]: "BUS_ACK_READY"     # host ack_ready
+  ui[3]: "OPCODE0"           # opcode[0]
+  ui[4]: "OPCODE1"           # opcode[1]
+  ui[5]: "SOURCE_ID0"        # source_id[0]
+  ui[6]: "SOURCE_ID1"        # source_id[1]
+  ui[7]: "DEST_ID0"          # dest_id[0] (DEST_ID1 could be time-multiplexed or unused)
 
-  # Outputs
-  uo[0]: ""
-  uo[1]: ""
-  uo[2]: ""
-  uo[3]: ""
-  uo[4]: ""
-  uo[5]: ""
-  uo[6]: ""
-  uo[7]: ""
+  # Outputs (uo_out[7:0])
+  uo[0]: "BUS_READY_IN"      # aes.ready_in
+  uo[1]: "BUS_DATA_VALID"    # aes.data_valid
+  uo[2]: "BUS_ACK_VALID"     # aes.ack_valid
+  uo[3]: "MODULE_SOURCE_ID0" # module_source_id[0]
+  uo[4]: "MODULE_SOURCE_ID1" # module_source_id[1]
+  uo[5]: "STATUS0"           # free / status / debug
+  uo[6]: "STATUS1"           # free / status / debug
+  uo[7]: "STATUS2"           # free / status / debug
 
-  # Bidirectional pins
-  uio[0]: ""
-  uio[1]: ""
-  uio[2]: ""
-  uio[3]: ""
-  uio[4]: ""
-  uio[5]: ""
-  uio[6]: ""
-  uio[7]: ""
+  # Bidirectional pins (uio_in/uio_out/uio_oe[7:0])
+  # Use these as your 8-bit DATA bus (data_in / data_out)
+  uio[0]: "DATA0"
+  uio[1]: "DATA1"
+  uio[2]: "DATA2"
+  uio[3]: "DATA3"
+  uio[4]: "DATA4"
+  uio[5]: "DATA5"
+  uio[6]: "DATA6"
+  uio[7]: "DATA7"
 
 # Do not change!
 yaml_version: 6
