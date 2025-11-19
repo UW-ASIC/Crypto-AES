@@ -16,17 +16,15 @@ module tt_um_uwasic_onboarding_aes (
 
     // outputs drive uio_out when sending, otherwise hi-Z via uio_oe
     // (you can start simple and just make aes always "output" on data bus)
-    assign uio_out = /* something like aes.data_out */;
     assign uio_oe  = 8'hFF;  // all driven for now; refine later
 
     // quick mapping for control:
     wire valid_in   = ui_in[0];
-    wire data_ready = ui_in[1];
     wire ack_ready  = ui_in[2];
     wire [1:0] opcode    = { ui_in[4], ui_in[3] };
     wire [1:0] source_id = { ui_in[6], ui_in[5] };
     wire [1:0] dest_id   = { 1'b0, ui_in[7] }; // or something more sensible
-
+    wire 
     // Outputs onto uo_out
     wire [1:0] module_source_id;
     wire       ready_in, data_valid, ack_valid;
@@ -46,7 +44,7 @@ module tt_um_uwasic_onboarding_aes (
         .data_in(data_bus),
         .ready_in(ready_in),
         .valid_in(valid_in),
-        .data_out(/* connect to uio_out */),
+        .data_out(uio_out),
         .data_ready(data_ready),
         .data_valid(data_valid),
 
