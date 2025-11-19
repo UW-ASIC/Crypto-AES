@@ -35,6 +35,7 @@ module tt_um_uwasic_onboarding_aes (
     wire       data_valid;
     wire       ack_valid;
 
+wire [1:0] module_source_id_x;
     // Tie opcode / IDs to some fixed operation for now (e.g. simple test mode)
     wire [1:0] opcode   = 2'b11; // OP_HASH in your test
     wire [1:0] source_id = 2'b00;
@@ -53,7 +54,7 @@ module tt_um_uwasic_onboarding_aes (
         .data_valid (data_valid),
         .ack_ready  (ack_ready),
         .ack_valid  (ack_valid),
-        .module_source_id(),  // ignore in TT context
+        .module_source_id(module_source_id_x),  // ignore in TT context
 
         .opcode     (opcode),
         .source_id  (source_id),
