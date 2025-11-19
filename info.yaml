@@ -1,7 +1,7 @@
 # Tiny Tapeout project information
 project:
   title: "AES-256 Core"
-  author: ""
+  author: "who cares!!!!!"
   description: "Tiny Tapeout project containing a serialized AES-256 core with shared S-box and bytewise load."
   top_module: "tt_um_uwasic_onboarding_aes"  # <-- must match project.v
 
