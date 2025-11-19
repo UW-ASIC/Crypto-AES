@@ -250,4 +250,6 @@ module aes (
         end
     end
 
+    wire _unused = &{addr, encdec_latched, round_done};
+
 endmodule

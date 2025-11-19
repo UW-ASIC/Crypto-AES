@@ -138,4 +138,6 @@ module roundkeygen_1lane (
         end
     end
 
+    wire _unused = &{w4, w5, w6};
+
 endmodule

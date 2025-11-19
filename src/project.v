@@ -69,6 +69,6 @@ wire [1:0] module_source_id_x;
     assign uio_out = {6'b0, data_valid, ready_in};
 
     // Mark unused signals to keep lint/synthesis happy
-    wire _unused = &{uio_in, 1'b0};
+    wire _unused = &{uio_in, 1'b0, ack_valid, module_source_id_x};
 
 endmodule
