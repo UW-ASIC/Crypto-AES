@@ -175,7 +175,7 @@ async def test_aes_random_vectors(dut):
     """Test AES-256 encryption with random vectors vs PyCryptodome (new arch)"""
     dut._log.info("=== AES Random Test Vector Test ===")
 
-    clock = Clock(dut.clk, 10, unit="ns")
+    clock = Clock(dut.clk, 10, units="ns")
     cocotb.start_soon(clock.start())
     await reset_dut(dut)
 
@@ -218,7 +218,7 @@ async def test_aes_simple_pattern(dut):
     """Test AES with a simple pattern (easier to debug) on new arch"""
     dut._log.info("=== AES Simple Pattern Test ===")
 
-    clock = Clock(dut.clk, 10, unit="ns")
+    clock = Clock(dut.clk, 10, units="ns")
     cocotb.start_soon(clock.start())
     await reset_dut(dut)
 
