@@ -49,7 +49,7 @@ module roundkeygen_1lane (
 
     // local temps (purely combinational inside a cycle)
     reg [31:0] t, k8, k9, k10, k11;
-
+    /* verilator lint_off BLKSEQ */
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             active        <= 1'b0;
@@ -137,7 +137,7 @@ module roundkeygen_1lane (
             sub_word <= sub_word_next;
         end
     end
-
+    /* verilator lint_on BLKSEQ */
     wire _unused = &{w4, w5, w6};
 
 endmodule
