@@ -2,9 +2,19 @@
 project:
   title: "AES-256 Core"
   author: "who cares!!!!!"
+  discord:      ""      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
   description: "Tiny Tapeout project containing a serialized AES-256 core with shared S-box and bytewise load."
-  top_module: "tt_um_uwasic_onboarding_aes"  # <-- must match project.v
+  language:     "Verilog" # other examples include SystemVerilog, Amaranth, VHDL, etc
+  clock_hz:     0       # Clock frequency in Hz (or 0 if not applicable)
 
+
+  # How many tiles your design occupies? A single tile is about 167x108 uM.
+  tiles: "1x1"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2 or 8x2
+  # Your top module name must start with "tt_um_". Make it unique by including your github username:
+  top_module: "tt_um_uwasic_onboarding_aes" 
+  # List your project's source files here.
+  # Source files must be in ./src and you must list each source file separately, one per line.
+  # Don't forget to also update `PROJECT_SOURCES` in test/Makefile.
   source_files:
     - "AES.v"
     - "aes_core_rs.v"
