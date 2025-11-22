@@ -38,7 +38,7 @@ module roundkeygen_1lane (
     reg [1:0]  byte_cnt;     // 0..3 instead of 0..3 in idx
 
     reg [31:0] src_word;
-    reg [31:0] sub_word;
+    reg [23:0] sub_word;
 
     reg [2:0]  rcon_idx;
     reg        use_rcon;
