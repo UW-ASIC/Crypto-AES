@@ -160,8 +160,6 @@ module aes_core_rs (
     assign ld_key_ready = (st == S_IDLE) && !key_full;
     assign ld_state_ready = (st == S_IDLE) && !state_full;
 
-    integer j;
-
     // ------------------------------------------------------------------------
     // Combinational next-state logic for state_reg
     // ------------------------------------------------------------------------
@@ -206,9 +204,8 @@ module aes_core_rs (
             key_full    <= 1'b0;
 
             state_reg   <= 128'd0;
-            state_reg_next <= 128'd0;
             sb_src_reg  <= 128'd0;
-            state_idx   <= 5'd0;
+            state_idx   <= 4'd0;
             state_full  <= 1'b0;
 
             // key schedule
@@ -369,7 +366,7 @@ module aes_core_rs (
                 // OUT: ciphertext in state_out, clear state loader
                 // ----------------------------------------------------------
                 S_OUT: begin
-                    state_idx  <= 5'd0;
+                    state_idx  <= 4'd0;
                     state_full <= 1'b0;
                     st         <= S_IDLE;
                 end
