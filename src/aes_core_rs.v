@@ -25,13 +25,14 @@ module aes_core_rs (
     // ------------------------------------------------------------------------
     // Internal storage for key & state
     // ------------------------------------------------------------------------
+    reg [127:0] state_load;      // loaded AES state 
     reg [127:0] state_reg;      // current AES state (in-place updated)
     reg [127:0] sb_src_reg;     // snapshot before SubBytes+ShiftRows
 
     reg [5:0]   key_idx;
     reg         key_full;
 
-    reg [4:0]   state_idx;
+    reg [3:0]   state_idx;
     reg         state_full;
 
     // ------------------------------------------------------------------------
@@ -219,13 +220,15 @@ module aes_core_rs (
                     end
                 end
 
-                // State load (MSB-first)
+                // Shift-register style state load (MSB-first overall)
                 if (ld_state_valid && ld_state_ready) begin
-                    state_reg[127 - 8*state_idx -: 8] <= ld_state_byte;
-                    if (state_idx == 5'd15) begin
+                    // shift left by 8 bits, insert new byte at LSB
+                    state_load <= { state_load[119:0], ld_state_byte };
+
+                    if (state_idx == 4'd15) begin
                         state_full <= 1'b1;
                     end else begin
-                        state_idx <= state_idx + 5'd1;
+                        state_idx <= state_idx + 4'd1;
                     end
                 end
             end
@@ -242,7 +245,7 @@ module aes_core_rs (
                         // key_buf[0..7] already hold w0..w7
 
                         // Initial AddRoundKey with K0 = {w0..w3}
-                        state_reg <= state_reg ^ { key_buf[0], key_buf[1],
+                        state_reg <= state_load ^ { key_buf[0], key_buf[1],
                                                 key_buf[2], key_buf[3] };
 
                         // Key schedule state

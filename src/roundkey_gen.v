@@ -18,20 +18,6 @@ module roundkeygen_1lane (
     output reg  [7:0]  sbox_in,
     input  wire [7:0]  sbox_out
 );
-
-    // FSM state
-    reg        active;
-    reg        phase;        // 0 = issue, 1 = capture
-    reg [2:0]  idx;          // 0..3
-
-    reg [31:0] src_word;
-
-    reg [31:0] sub_word;        // registered
-    reg [31:0] sub_word_next;   // next-state
-
-    reg [2:0]  rcon_idx;
-    reg        use_rcon;
-
     // Rcon table
     wire [31:0] rcon [0:7];
     assign rcon[0] = 32'h01_00_00_00;
@@ -47,18 +33,29 @@ module roundkeygen_1lane (
         rotword = {w[23:0], w[31:24]};
     endfunction
 
-    // local temps (purely combinational inside a cycle)
+    reg        active;
+    reg        phase;        // 0 = ISSUE, 1 = CAPTURE
+    reg [1:0]  byte_cnt;     // 0..3 instead of 0..3 in idx
+
+    reg [31:0] src_word;
+    reg [31:0] sub_word;
+
+    reg [2:0]  rcon_idx;
+    reg        use_rcon;
+
+    // local temps
     reg [31:0] t, k8, k9, k10, k11;
-    /* verilator lint_off BLKSEQ */
+
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             active        <= 1'b0;
             phase         <= 1'b0;
-            idx           <= 3'd0;
-            sub_word      <= 32'd0;
+            byte_cnt      <= 2'd0;
             src_word      <= 32'd0;
+            sub_word      <= 32'd0;
             rcon_idx      <= 3'd0;
             use_rcon      <= 1'b1;
+
             w8            <= 32'd0;
             w9            <= 32'd0;
             w10           <= 32'd0;
@@ -67,45 +64,38 @@ module roundkeygen_1lane (
             use_rcon_out  <= 1'b1;
             done          <= 1'b0;
             sbox_in       <= 8'h00;
+
         end else begin
-            // defaults
-            done          <= 1'b0;
-            sub_word_next =  sub_word;  // start from current value
+            done <= 1'b0;
 
             if (start && !active) begin
-                // start new quartet
-                active        <= 1'b1;
-                phase         <= 1'b0;
-                idx           <= 3'd0;
-                sub_word_next = 32'd0;
+                // Start new quartet
+                active   <= 1'b1;
+                phase    <= 1'b0;        // ISSUE first
+                byte_cnt <= 2'd0;
+                sub_word <= 32'd0;
 
-                rcon_idx      <= rcon_idx_in;
-                use_rcon      <= use_rcon_in;
-                src_word      <= use_rcon_in ? rotword(w7) : w7;
+                rcon_idx <= rcon_idx_in;
+                use_rcon <= use_rcon_in;
+
+                // choose source word, apply RotWord if needed
+                src_word <= use_rcon_in ? rotword(w7) : w7;
 
             end else if (active) begin
                 if (!phase) begin
-                    // ISSUE S-box input
-                    case (idx)
-                        3'd0: sbox_in <= src_word[31:24];
-                        3'd1: sbox_in <= src_word[23:16];
-                        3'd2: sbox_in <= src_word[15:8];
-                        default: sbox_in <= src_word[7:0];  // idx == 3
-                    endcase
-                    phase <= 1'b1;
+                    // ISSUE: present next byte to S-box and shift src_word
+                    sbox_in <= src_word[31:24];
+                    src_word <= {src_word[23:0], 8'h00};
+                    phase    <= 1'b1;
 
                 end else begin
-                    // CAPTURE S-box output into *next* sub_word
-                    case (idx)
-                        3'd0: sub_word_next[31:24] = sbox_out;
-                        3'd1: sub_word_next[23:16] = sbox_out;
-                        3'd2: sub_word_next[15:8]  = sbox_out;
-                        default: sub_word_next[7:0] = sbox_out;  // idx == 3
-                    endcase
+                    // CAPTURE: shift sub_word and append S-box output
+                    sub_word <= {sub_word[23:0], sbox_out};
 
-                    if (idx == 3'd3) begin
-                        // now have full SubWord in sub_word_next
-                        t = sub_word_next;
+                    if (byte_cnt == 2'd3) begin
+                        // we now have full SubWord in sub_word after this cycle
+                        t = {sub_word[23:0], sbox_out}; // same as new sub_word
+
                         if (use_rcon)
                             t = t ^ rcon[rcon_idx];
 
@@ -122,19 +112,18 @@ module roundkeygen_1lane (
                         rcon_idx_out <= use_rcon ? (rcon_idx + 3'd1) : rcon_idx;
                         use_rcon_out <= ~use_rcon;
 
-                        active <= 1'b0;
-                        phase  <= 1'b0;
-                        done   <= 1'b1;
+                        active   <= 1'b0;
+                        phase    <= 1'b0;
+                        byte_cnt <= 2'd0;
+                        done     <= 1'b1;
 
                     end else begin
-                        idx   <= idx + 3'd1;
-                        phase <= 1'b0;
+                        // continue with next byte
+                        byte_cnt <= byte_cnt + 2'd1;
+                        phase    <= 1'b0;
                     end
                 end
             end
-
-            // commit next-state for sub_word
-            sub_word <= sub_word_next;
         end
     end
     /* verilator lint_on BLKSEQ */
