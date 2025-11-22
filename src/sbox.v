@@ -1,272 +1,230 @@
-module sbox(
-    input wire [7:0] byte_in,
+/* MUX21I is an inverting 2:1 multiplexor */
+module MUX21I ( A, B, s, Q );
+    input A;
+    input B;
+    input s;
+    output Q;
 
-    // reg used for procedural assignment inside always block
-    output reg [7:0] byte_out
-);
-
-    // implement lookup table using case statement
-    // in combinational always block
-    always @(*)
-    begin
-        case (byte_in)
-            8'h00 : byte_out = 8'h63;
-            8'h01 : byte_out = 8'h7c;
-            8'h02 : byte_out = 8'h77;
-            8'h03 : byte_out = 8'h7b;
-            8'h04 : byte_out = 8'hf2;
-            8'h05 : byte_out = 8'h6b;
-            8'h06 : byte_out = 8'h6f;
-            8'h07 : byte_out = 8'hc5;
-            8'h08 : byte_out = 8'h30;
-            8'h09 : byte_out = 8'h01;
-            8'h0a : byte_out = 8'h67;
-            8'h0b : byte_out = 8'h2b;
-            8'h0c : byte_out = 8'hfe;
-            8'h0d : byte_out = 8'hd7;
-            8'h0e : byte_out = 8'hab;
-            8'h0f : byte_out = 8'h76;
-            8'h10 : byte_out = 8'hca;
-            8'h11 : byte_out = 8'h82;
-            8'h12 : byte_out = 8'hc9;
-            8'h13 : byte_out = 8'h7d;
-            8'h14 : byte_out = 8'hfa;
-            8'h15 : byte_out = 8'h59;
-            8'h16 : byte_out = 8'h47;
-            8'h17 : byte_out = 8'hf0;
-            8'h18 : byte_out = 8'had;
-            8'h19 : byte_out = 8'hd4;
-            8'h1a : byte_out = 8'ha2;
-            8'h1b : byte_out = 8'haf;
-            8'h1c : byte_out = 8'h9c;
-            8'h1d : byte_out = 8'ha4;
-            8'h1e : byte_out = 8'h72;
-            8'h1f : byte_out = 8'hc0;
-            8'h20 : byte_out = 8'hb7;
-            8'h21 : byte_out = 8'hfd;
-            8'h22 : byte_out = 8'h93;
-            8'h23 : byte_out = 8'h26;
-            8'h24 : byte_out = 8'h36;
-            8'h25 : byte_out = 8'h3f;
-            8'h26 : byte_out = 8'hf7;
-            8'h27 : byte_out = 8'hcc;
-            8'h28 : byte_out = 8'h34;
-            8'h29 : byte_out = 8'ha5;
-            8'h2a : byte_out = 8'he5;
-            8'h2b : byte_out = 8'hf1;
-            8'h2c : byte_out = 8'h71;
-            8'h2d : byte_out = 8'hd8;
-            8'h2e : byte_out = 8'h31;
-            8'h2f : byte_out = 8'h15;
-            8'h30 : byte_out = 8'h04;
-            8'h31 : byte_out = 8'hc7;
-            8'h32 : byte_out = 8'h23;
-            8'h33 : byte_out = 8'hc3;
-            8'h34 : byte_out = 8'h18;
-            8'h35 : byte_out = 8'h96;
-            8'h36 : byte_out = 8'h05;
-            8'h37 : byte_out = 8'h9a;
-            8'h38 : byte_out = 8'h07;
-            8'h39 : byte_out = 8'h12;
-            8'h3a : byte_out = 8'h80;
-            8'h3b : byte_out = 8'he2;
-            8'h3c : byte_out = 8'heb;
-            8'h3d : byte_out = 8'h27;
-            8'h3e : byte_out = 8'hb2;
-            8'h3f : byte_out = 8'h75;
-            8'h40 : byte_out = 8'h09;
-            8'h41 : byte_out = 8'h83;
-            8'h42 : byte_out = 8'h2c;
-            8'h43 : byte_out = 8'h1a;
-            8'h44 : byte_out = 8'h1b;
-            8'h45 : byte_out = 8'h6e;
-            8'h46 : byte_out = 8'h5a;
-            8'h47 : byte_out = 8'ha0;
-            8'h48 : byte_out = 8'h52;
-            8'h49 : byte_out = 8'h3b;
-            8'h4a : byte_out = 8'hd6;
-            8'h4b : byte_out = 8'hb3;
-            8'h4c : byte_out = 8'h29;
-            8'h4d : byte_out = 8'he3;
-            8'h4e : byte_out = 8'h2f;
-            8'h4f : byte_out = 8'h84;
-            8'h50 : byte_out = 8'h53;
-            8'h51 : byte_out = 8'hd1;
-            8'h52 : byte_out = 8'h00;
-            8'h53 : byte_out = 8'hed;
-            8'h54 : byte_out = 8'h20;
-            8'h55 : byte_out = 8'hfc;
-            8'h56 : byte_out = 8'hb1;
-            8'h57 : byte_out = 8'h5b;
-            8'h58 : byte_out = 8'h6a;
-            8'h59 : byte_out = 8'hcb;
-            8'h5a : byte_out = 8'hbe;
-            8'h5b : byte_out = 8'h39;
-            8'h5c : byte_out = 8'h4a;
-            8'h5d : byte_out = 8'h4c;
-            8'h5e : byte_out = 8'h58;
-            8'h5f : byte_out = 8'hcf;
-            8'h60 : byte_out = 8'hd0;
-            8'h61 : byte_out = 8'hef;
-            8'h62 : byte_out = 8'haa;
-            8'h63 : byte_out = 8'hfb;
-            8'h64 : byte_out = 8'h43;
-            8'h65 : byte_out = 8'h4d;
-            8'h66 : byte_out = 8'h33;
-            8'h67 : byte_out = 8'h85;
-            8'h68 : byte_out = 8'h45;
-            8'h69 : byte_out = 8'hf9;
-            8'h6a : byte_out = 8'h02;
-            8'h6b : byte_out = 8'h7f;
-            8'h6c : byte_out = 8'h50;
-            8'h6d : byte_out = 8'h3c;
-            8'h6e : byte_out = 8'h9f;
-            8'h6f : byte_out = 8'ha8;
-            8'h70 : byte_out = 8'h51;
-            8'h71 : byte_out = 8'ha3;
-            8'h72 : byte_out = 8'h40;
-            8'h73 : byte_out = 8'h8f;
-            8'h74 : byte_out = 8'h92;
-            8'h75 : byte_out = 8'h9d;
-            8'h76 : byte_out = 8'h38;
-            8'h77 : byte_out = 8'hf5;
-            8'h78 : byte_out = 8'hbc;
-            8'h79 : byte_out = 8'hb6;
-            8'h7a : byte_out = 8'hda;
-            8'h7b : byte_out = 8'h21;
-            8'h7c : byte_out = 8'h10;
-            8'h7d : byte_out = 8'hff;
-            8'h7e : byte_out = 8'hf3;
-            8'h7f : byte_out = 8'hd2;
-            8'h80 : byte_out = 8'hcd;
-            8'h81 : byte_out = 8'h0c;
-            8'h82 : byte_out = 8'h13;
-            8'h83 : byte_out = 8'hec;
-            8'h84 : byte_out = 8'h5f;
-            8'h85 : byte_out = 8'h97;
-            8'h86 : byte_out = 8'h44;
-            8'h87 : byte_out = 8'h17;
-            8'h88 : byte_out = 8'hc4;
-            8'h89 : byte_out = 8'ha7;
-            8'h8a : byte_out = 8'h7e;
-            8'h8b : byte_out = 8'h3d;
-            8'h8c : byte_out = 8'h64;
-            8'h8d : byte_out = 8'h5d;
-            8'h8e : byte_out = 8'h19;
-            8'h8f : byte_out = 8'h73;
-            8'h90 : byte_out = 8'h60;
-            8'h91 : byte_out = 8'h81;
-            8'h92 : byte_out = 8'h4f;
-            8'h93 : byte_out = 8'hdc;
-            8'h94 : byte_out = 8'h22;
-            8'h95 : byte_out = 8'h2a;
-            8'h96 : byte_out = 8'h90;
-            8'h97 : byte_out = 8'h88;
-            8'h98 : byte_out = 8'h46;
-            8'h99 : byte_out = 8'hee;
-            8'h9a : byte_out = 8'hb8;
-            8'h9b : byte_out = 8'h14;
-            8'h9c : byte_out = 8'hde;
-            8'h9d : byte_out = 8'h5e;
-            8'h9e : byte_out = 8'h0b;
-            8'h9f : byte_out = 8'hdb;
-            8'ha0 : byte_out = 8'he0;
-            8'ha1 : byte_out = 8'h32;
-            8'ha2 : byte_out = 8'h3a;
-            8'ha3 : byte_out = 8'h0a;
-            8'ha4 : byte_out = 8'h49;
-            8'ha5 : byte_out = 8'h06;
-            8'ha6 : byte_out = 8'h24;
-            8'ha7 : byte_out = 8'h5c;
-            8'ha8 : byte_out = 8'hc2;
-            8'ha9 : byte_out = 8'hd3;
-            8'haa : byte_out = 8'hac;
-            8'hab : byte_out = 8'h62;
-            8'hac : byte_out = 8'h91;
-            8'had : byte_out = 8'h95;
-            8'hae : byte_out = 8'he4;
-            8'haf : byte_out = 8'h79;
-            8'hb0 : byte_out = 8'he7;
-            8'hb1 : byte_out = 8'hc8;
-            8'hb2 : byte_out = 8'h37;
-            8'hb3 : byte_out = 8'h6d;
-            8'hb4 : byte_out = 8'h8d;
-            8'hb5 : byte_out = 8'hd5;
-            8'hb6 : byte_out = 8'h4e;
-            8'hb7 : byte_out = 8'ha9;
-            8'hb8 : byte_out = 8'h6c;
-            8'hb9 : byte_out = 8'h56;
-            8'hba : byte_out = 8'hf4;
-            8'hbb : byte_out = 8'hea;
-            8'hbc : byte_out = 8'h65;
-            8'hbd : byte_out = 8'h7a;
-            8'hbe : byte_out = 8'hae;
-            8'hbf : byte_out = 8'h08;
-            8'hc0 : byte_out = 8'hba;
-            8'hc1 : byte_out = 8'h78;
-            8'hc2 : byte_out = 8'h25;
-            8'hc3 : byte_out = 8'h2e;
-            8'hc4 : byte_out = 8'h1c;
-            8'hc5 : byte_out = 8'ha6;
-            8'hc6 : byte_out = 8'hb4;
-            8'hc7 : byte_out = 8'hc6;
-            8'hc8 : byte_out = 8'he8;
-            8'hc9 : byte_out = 8'hdd;
-            8'hca : byte_out = 8'h74;
-            8'hcb : byte_out = 8'h1f;
-            8'hcc : byte_out = 8'h4b;
-            8'hcd : byte_out = 8'hbd;
-            8'hce : byte_out = 8'h8b;
-            8'hcf : byte_out = 8'h8a;
-            8'hd0 : byte_out = 8'h70;
-            8'hd1 : byte_out = 8'h3e;
-            8'hd2 : byte_out = 8'hb5;
-            8'hd3 : byte_out = 8'h66;
-            8'hd4 : byte_out = 8'h48;
-            8'hd5 : byte_out = 8'h03;
-            8'hd6 : byte_out = 8'hf6;
-            8'hd7 : byte_out = 8'h0e;
-            8'hd8 : byte_out = 8'h61;
-            8'hd9 : byte_out = 8'h35;
-            8'hda : byte_out = 8'h57;
-            8'hdb : byte_out = 8'hb9;
-            8'hdc : byte_out = 8'h86;
-            8'hdd : byte_out = 8'hc1;
-            8'hde : byte_out = 8'h1d;
-            8'hdf : byte_out = 8'h9e;
-            8'he0 : byte_out = 8'he1;
-            8'he1 : byte_out = 8'hf8;
-            8'he2 : byte_out = 8'h98;
-            8'he3 : byte_out = 8'h11;
-            8'he4 : byte_out = 8'h69;
-            8'he5 : byte_out = 8'hd9;
-            8'he6 : byte_out = 8'h8e;
-            8'he7 : byte_out = 8'h94;
-            8'he8 : byte_out = 8'h9b;
-            8'he9 : byte_out = 8'h1e;
-            8'hea : byte_out = 8'h87;
-            8'heb : byte_out = 8'he9;
-            8'hec : byte_out = 8'hce;
-            8'hed : byte_out = 8'h55;
-            8'hee : byte_out = 8'h28;
-            8'hef : byte_out = 8'hdf;
-            8'hf0 : byte_out = 8'h8c;
-            8'hf1 : byte_out = 8'ha1;
-            8'hf2 : byte_out = 8'h89;
-            8'hf3 : byte_out = 8'h0d;
-            8'hf4 : byte_out = 8'hbf;
-            8'hf5 : byte_out = 8'he6;
-            8'hf6 : byte_out = 8'h42;
-            8'hf7 : byte_out = 8'h68;
-            8'hf8 : byte_out = 8'h41;
-            8'hf9 : byte_out = 8'h99;
-            8'hfa : byte_out = 8'h2d;
-            8'hfb : byte_out = 8'h0f;
-            8'hfc : byte_out = 8'hb0;
-            8'hfd : byte_out = 8'h54;
-            8'hfe : byte_out = 8'hbb;
-            8'hff : byte_out = 8'h16;
-        endcase
-    end
-
+    assign Q = ~ ( s ? A : B ); /* mock-up for FPGA implementation */
 endmodule
+
+module SELECT_NOT_8 ( A, B, s, Q );
+    input [7:0] A;
+    input [7:0] B;
+    input s;
+    output [7:0] Q;
+    MUX21I m7(A[7],B[7],s,Q[7]);
+    MUX21I m6(A[6],B[6],s,Q[6]);
+    MUX21I m5(A[5],B[5],s,Q[5]);
+    MUX21I m4(A[4],B[4],s,Q[4]);
+    MUX21I m3(A[3],B[3],s,Q[3]);
+    MUX21I m2(A[2],B[2],s,Q[2]);
+    MUX21I m1(A[1],B[1],s,Q[1]);
+    MUX21I m0(A[0],B[0],s,Q[0]);
+endmodule
+
+/* multiply in GF(2^4)/GF(2^2), shared factors, basis [alpha^8, alpha^2] */
+module GF_MULS_4 ( A, a, Al, Ah, aa, B, b, Bl, Bh, bb, Q );
+    input [3:0] A;
+    input [1:0] a;
+    input Al;
+    
+    input Ah;
+    input aa;
+    
+    
+    input [3:0] B;
+    input [1:0] b;
+    input Bl;
+    
+    input Bh;
+    input bb;
+    
+    
+    output [3:0] Q;
+    wire
+    [1:0] ph, pl, ps, p;
+    wire
+    t;
+    GF_MULS_2 himul(A[3:2], Ah, B[3:2], Bh, ph);
+    GF_MULS_2 lomul(A[1:0], Al, B[1:0], Bl, pl);
+    GF_MULS_SCL_2 summul( a, aa, b, bb, p);
+    assign Q = { (ph ^ p), (pl ^ p) };
+endmodule
+
+ /* multiply in GF(2^2), shared factors, using normal basis [Omega^2,Omega] */
+module GF_MULS_2 ( A, ab, B, cd, Q );
+    input [1:0] A;
+    input ab;
+    input [1:0] B;
+    input cd;
+    output [1:0] Q;
+    wire
+    abcd, p, q;
+    assign abcd = ~(ab & cd); /* note: ~& syntax for NAND won’t compile */
+    assign p = (~(A[1] & B[1])) ^ abcd;
+    assign q = (~(A[0] & B[0])) ^ abcd;
+    assign Q = { p, q };
+endmodule
+
+  /* square in GF(2^2), using normal basis [Omega^2,Omega] */
+ /* inverse is the same as square in GF(2^2), using any normal basis */
+module GF_SQ_2 ( A, Q );
+    input [1:0] A;
+    output [1:0] Q;
+    assign Q = { A[0], A[1] };
+endmodule
+
+ /* multiply & scale by N in GF(2^2), shared factors, basis [Omega^2,Omega] */
+module GF_MULS_SCL_2 ( A, ab, B, cd, Q );
+    input [1:0] A;
+    input ab;
+    input [1:0] B;
+    input cd;
+    output [1:0] Q;
+    wire
+    t, p, q;
+    assign t = ~(A[0] & B[0]); /* note: ~& syntax for NAND won’t compile */
+    assign p = (~(ab & cd)) ^ t;
+    assign q = (~(A[1] & B[1])) ^ t;
+    assign Q = { p, q };
+endmodule
+
+module GF_INV_4 ( A, Q );
+    input [3:0] A;
+    output [3:0] Q;
+    wire
+    [1:0] a, b, c, d, p, q;
+    wire
+    sa, sb, sd; /* for shared factors in multipliers */
+    assign a = A[3:2];
+    assign b = A[1:0];
+    assign sa = a[1] ^ a[0];
+    assign sb = b[1] ^ b[0];
+    /* optimize this section as shown below
+    GF_MULS_2 abmul(a, sa, b, sb, ab);
+    GF_SQ_2 absq( (a ^ b), ab2);
+    GF_SCLW2_2 absclN( ab2, ab2N);
+    GF_SQ_2 dinv( (ab ^ ab2N), d);
+    */
+    assign c = { /* note: ~| syntax for NOR won’t compile */
+    ~(a[1] | b[1]) ^ (~(sa & sb)) ,
+    ~(sa | sb) ^ (~(a[0] & b[0])) };
+    GF_SQ_2 dinv( c, d);
+    /* end of optimization */
+    assign sd = d[1] ^ d[0];
+    GF_MULS_2 pmul(d, sd, b, sb, p);
+    GF_MULS_2 qmul(d, sd, a, sa, q);
+    assign Q = { p, q };
+endmodule
+
+/* inverse in GF(2^8)/GF(2^4), using normal basis [d^16, d] */
+ module GF_INV_8 ( A, Q );
+    input [7:0] A;
+    output [7:0] Q;
+    wire
+    [3:0] a, b, c, d, p, q;
+    wire
+    [1:0] sa, sb, sd, t; /* for shared factors in multipliers */
+    wire al, ah, aa, bl, bh, bb, dl, dh, dd; /* for shared factors */
+    wire c1, c2, c3; /* for temp var */
+
+    assign a = A[7:4];
+    assign b = A[3:0];
+    assign sa = a[3:2] ^ a[1:0];
+    assign sb = b[3:2] ^ b[1:0];
+    assign al = a[1] ^ a[0];
+    assign ah = a[3] ^ a[2];
+    assign aa = sa[1] ^ sa[0];
+    assign bl = b[1] ^ b[0];
+    assign bh = b[3] ^ b[2];
+    assign bb = sb[1] ^ sb[0];
+    /* optimize this section as shown below
+    GF_MULS_4 abmul(a, sa, al, ah, aa, b, sb, bl, bh, bb, ab);
+    GF_SQ_SCL_4 absq( (a ^ b), ab2);
+    GF_INV_4 dinv( (ab ^ ab2), d);
+    */
+    assign c1 = ~(ah & bh);
+    assign c2 = ~(sa[0] & sb[0]);
+    assign c3 = ~(aa & bb);
+    assign c = { /* note: ~| syntax for NOR won’t compile */
+    (~(sa[0] | sb[0]) ^ (~(a[3] & b[3]))) ^ c1 ^ c3 ,
+    (~(sa[1] | sb[1]) ^ (~(a[2] & b[2]))) ^ c1 ^ c2 ,
+    (~(al | bl) ^ (~(a[1] & b[1]))) ^ c2 ^ c3 ,
+    (~(a[0] | b[0]) ^ (~(al & bl))) ^ (~(sa[1] & sb[1])) ^ c2 };
+    GF_INV_4 dinv( c, d);
+    /* end of optimization */
+    assign sd = d[3:2] ^ d[1:0];
+    assign dl = d[1] ^ d[0];
+    assign dh = d[3] ^ d[2];
+    assign dd = sd[1] ^ sd[0];
+    GF_MULS_4 pmul(d, sd, dl, dh, dd, b, sb, bl, bh, bb, p);
+    GF_MULS_4 qmul(d, sd, dl, dh, dd, a, sa, al, ah, aa, q);
+    assign Q = { p, q };
+endmodule
+
+module sbox ( byte_in, byte_out );
+    input [7:0] byte_in;
+    output [7:0] byte_out;
+    wire [7:0] B, C, D, X, Y, Z;
+    wire R1, R2, R3, R4, R5, R6, R7, R8, R9;
+    wire T1, T2, T3, T4, T5, T6, T7, T8, T9, T10;
+
+ /* change basis from GF(2^8) to GF(2^8)/GF(2^4)/GF(2^2) */
+ /* combine with bit inverse matrix multiply of Sbox */
+    assign R1 = byte_in[7] ^ byte_in[5] ;
+    assign R2 = byte_in[7] ~^ byte_in[4] ;
+    assign R3 = byte_in[6] ^ byte_in[0] ;
+    assign R4 = byte_in[5] ~^ R3 ;
+    assign R5 = byte_in[4] ^ R4 ;
+    assign R6 = byte_in[3] ^ byte_in[0] ;
+    assign R7 = byte_in[2] ^ R1 ;
+    assign R8 = byte_in[1] ^ R3 ;
+    assign R9 = byte_in[3] ^ R8 ;
+    assign B[7] = R7 ~^ R8 ;
+    assign B[6] = R5 ;
+    assign B[5] = byte_in[1] ^ R4 ;
+    assign B[4] = R1 ~^ R3 ;
+    assign B[3] = byte_in[1] ^ R2 ^ R6 ;
+    assign B[2] = ~ byte_in[0] ;
+    assign B[1] = R4 ;
+    assign B[0] = byte_in[2] ~^ R9 ;
+    assign Y[7] = R2 ;
+    assign Y[6] = byte_in[4] ^ R8 ;
+    assign Y[5] = byte_in[6] ^ byte_in[4] ;
+    assign Y[4] = R9 ;
+    assign Y[3] = byte_in[6] ~^ R2 ;
+    assign Y[2] = R7 ;
+    assign Y[1] = byte_in[4] ^ R6 ;
+    assign Y[0] = byte_in[1] ^ R5 ;
+    SELECT_NOT_8 sel_in( B, Y, 1, Z );
+    GF_INV_8 inv( Z, C );
+    /* change basis back from GF(2^8)/GF(2^4)/GF(2^2) to GF(2^8) */
+    assign T1 = C[7] ^ C[3] ;
+    assign T2 = C[6] ^ C[4] ;
+    assign T3 = C[6] ^ C[0] ;
+    assign T4 = C[5] ~^ C[3] ;
+    assign T5 = C[5] ~^ T1 ;
+    assign T6 = C[5] ~^ C[1] ;
+    assign T7 = C[4] ~^ T6 ;
+    assign T8 = C[2] ^ T4 ;
+    assign T9 = C[1] ^ T2 ;
+    assign T10 = T3 ^ T5 ;
+    assign D[7] = T4 ;
+    assign D[6] = T1 ;
+    assign D[5] = T3 ;
+    assign D[4] = T5 ;
+    assign D[3] = T2 ^ T5 ;
+    assign D[2] = T3 ^ T8 ;
+    assign D[1] = T7 ;
+    assign D[0] = T9 ;
+    assign X[7] = C[4] ~^ C[1] ;
+    assign X[6] = C[1] ^ T10 ;
+    assign X[5] = C[2] ^ T10 ;
+    assign X[4] = C[6] ~^ C[1] ;
+    assign X[3] = T8 ^ T9 ;
+    assign X[2] = C[7] ~^ T7 ;
+    assign X[1] = T6 ;
+    assign X[0] = ~ C[2] ;
+    SELECT_NOT_8 sel_out( D, X, 1, byte_out );
+ endmodule
