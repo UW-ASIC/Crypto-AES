@@ -43,8 +43,18 @@ module roundkeygen_1lane (
     reg [2:0]  rcon_idx;
     reg        use_rcon;
 
-    // local temps
-    reg [31:0] t, k8, k9, k10, k11;
+    // new SubWord after capturing this S-box output
+    wire [31:0] subword_new = {sub_word[23:0], sbox_out};
+
+    // t = SubWord (optionally XOR Rcon)
+    wire [31:0] t_word = subword_new ^
+                        (use_rcon ? rcon[rcon_idx] : 32'h0000_0000);
+
+    // next quartet values
+    wire [31:0] w8_next  = w0 ^ t_word;
+    wire [31:0] w9_next  = w1 ^ w0 ^ t_word;
+    wire [31:0] w10_next = w2 ^ w1 ^ w0 ^ t_word;
+    wire [31:0] w11_next = w3 ^ w2 ^ w1 ^ w0 ^ t_word;
 
     always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
@@ -90,24 +100,15 @@ module roundkeygen_1lane (
 
                 end else begin
                     // CAPTURE: shift sub_word and append S-box output
-                    sub_word <= {sub_word[23:0], sbox_out};
+                    sub_word <= subword_new;
 
                     if (byte_cnt == 2'd3) begin
-                        // we now have full SubWord in sub_word after this cycle
-                        t = {sub_word[23:0], sbox_out}; // same as new sub_word
+                        // full SubWord now in subword_new / sub_word_next
 
-                        if (use_rcon)
-                            t = t ^ rcon[rcon_idx];
-
-                        k8  = w0 ^ t;
-                        k9  = w1 ^ k8;
-                        k10 = w2 ^ k9;
-                        k11 = w3 ^ k10;
-
-                        w8  <= k8;
-                        w9  <= k9;
-                        w10 <= k10;
-                        w11 <= k11;
+                        w8  <= w8_next;
+                        w9  <= w9_next;
+                        w10 <= w10_next;
+                        w11 <= w11_next;
 
                         rcon_idx_out <= use_rcon ? (rcon_idx + 3'd1) : rcon_idx;
                         use_rcon_out <= ~use_rcon;
