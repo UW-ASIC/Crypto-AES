@@ -28,6 +28,7 @@ module aes_core_rs (
     reg [127:0] state_load;      // loaded AES state 
     reg [127:0] state_reg;      // current AES state (in-place updated)
     reg [127:0] sb_src_reg;     // snapshot before SubBytes+ShiftRows
+    reg [127:0] state_reg_next;
 
     reg [5:0]   key_idx;
     reg         key_full;
@@ -159,6 +160,33 @@ module aes_core_rs (
     assign ld_key_ready = (st == S_IDLE) && !key_full;
     assign ld_state_ready = (st == S_IDLE) && !state_full;
 
+    integer j;
+
+    // ------------------------------------------------------------------------
+    // Combinational next-state logic for state_reg
+    // ------------------------------------------------------------------------
+    always @* begin
+        // default: hold current value
+        state_reg_next = state_reg;
+
+        // 1) Initial AddRoundKey in S_IDLE when we see start
+        if (st == S_IDLE && start && key_full && state_full) begin
+            state_reg_next = state_load ^ { key_buf[0], key_buf[1],
+                                            key_buf[2], key_buf[3] };
+        end
+
+        // 2) SubBytes/ShiftRows byte write in S_SB (overwrites one byte)
+        if (st == S_SB && sb_we) begin
+            // update only the selected byte, keep others
+            state_reg_next[127 - 8*sb_idx -: 8] = sb_byte;
+        end
+
+        // 3) AddRoundKey after MixColumns in S_ARK (overwrites entire state)
+        if (st == S_ARK) begin
+            state_reg_next = mc_out ^ curr_rkey;
+        end
+    end
+
     integer i;
 
     // ------------------------------------------------------------------------
@@ -178,6 +206,7 @@ module aes_core_rs (
             key_full    <= 1'b0;
 
             state_reg   <= 128'd0;
+            state_reg_next <= 128'd0;
             sb_src_reg  <= 128'd0;
             state_idx   <= 5'd0;
             state_full  <= 1'b0;
@@ -232,7 +261,7 @@ module aes_core_rs (
                     end
                 end
             end
-
+            state_reg <= state_reg_next;
             // --------------------------------------------------------------
             // AES control FSM
             // --------------------------------------------------------------
@@ -245,8 +274,8 @@ module aes_core_rs (
                         // key_buf[0..7] already hold w0..w7
 
                         // Initial AddRoundKey with K0 = {w0..w3}
-                        state_reg <= state_load ^ { key_buf[0], key_buf[1],
-                                                key_buf[2], key_buf[3] };
+                        //state_reg <= state_load ^ { key_buf[0], key_buf[1],
+                          //                      key_buf[2], key_buf[3] };
 
                         // Key schedule state
                         rcon_idx   <= 3'd0;
@@ -275,9 +304,9 @@ module aes_core_rs (
                 // SB: streaming SB+SR updates state_reg via sb_we/sb_idx/sb_byte
                 // ----------------------------------------------------------
                 S_SB: begin
-                    if (sb_we) begin
-                        state_reg[127 - 8*sb_idx -: 8] <= sb_byte;
-                    end
+                    //if (sb_we) begin
+                      //  state_reg[127 - 8*sb_idx -: 8] <= sb_byte;
+                    //end
                     if (sb_done) begin
                         st <= S_MC;
                     end
@@ -296,12 +325,12 @@ module aes_core_rs (
                 // ----------------------------------------------------------
                 S_ARK: begin
                     if (round == 4'd14) begin
-                        state_reg <= mc_out ^ curr_rkey;
+                        //state_reg <= mc_out ^ curr_rkey;
                         state_out <= mc_out ^ curr_rkey;
                         done      <= 1'b1;
                         st        <= S_OUT;
                     end else begin
-                        state_reg <= mc_out ^ curr_rkey;
+                        //state_reg <= mc_out ^ curr_rkey;
                         rk_started<= 1'b0;
                         st        <= S_KS;
                     end
