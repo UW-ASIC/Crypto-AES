@@ -62,7 +62,7 @@ module roundkeygen_1lane (
             phase         <= 1'b0;
             byte_cnt      <= 2'd0;
             src_word      <= 32'd0;
-            sub_word      <= 32'd0;
+            sub_word      <= 24'd0;
             rcon_idx      <= 3'd0;
             use_rcon      <= 1'b1;
 
@@ -83,7 +83,7 @@ module roundkeygen_1lane (
                 active   <= 1'b1;
                 phase    <= 1'b0;        // ISSUE first
                 byte_cnt <= 2'd0;
-                sub_word <= 32'd0;
+                sub_word <= 24'd0;
 
                 rcon_idx <= rcon_idx_in;
                 use_rcon <= use_rcon_in;
@@ -100,7 +100,7 @@ module roundkeygen_1lane (
 
                 end else begin
                     // CAPTURE: shift sub_word and append S-box output
-                    sub_word <= subword_new;
+                    sub_word <= subword_new[23:0];
 
                     if (byte_cnt == 2'd3) begin
                         // full SubWord now in subword_new / sub_word_next
