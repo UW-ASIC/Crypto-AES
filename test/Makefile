@@ -9,7 +9,6 @@ PROJECT_SOURCES = \
   AES.v \
   aes_core_rs.v \
   sub_bytes.v \
-  shift_rows.v \
   mix_columns.v \
   sbox.v \
   roundkey_gen.v \

@@ -22,14 +22,7 @@ module aes (
     input  wire        encdec,
     input  wire [23:0] addr
 );
-
-    // VCD dump (sim only)
-    initial begin
-        $dumpfile("aes.vcd");
-        $dumpvars(0, aes);
-    end
-
-    // Opcodes (same as your Python TB)
+    // Opcodes 
     localparam [1:0] OP_LOAD_KEY    = 2'b00;
     localparam [1:0] OP_LOAD_TEXT   = 2'b01;
     localparam [1:0] OP_WRITE_RESULT= 2'b10;
@@ -45,7 +38,6 @@ module aes (
 
     reg [2:0]  cState;       // current FSM state
     reg [5:0]  byte_cnt;     // up to 32 bytes
-    reg        encdec_latched;
 
     localparam [1:0] MEM_ID = 2'b00,
                      AES_ID = 2'b10;
@@ -66,7 +58,6 @@ module aes (
     reg         core_start;
     wire [127:0] core_state_out;
     wire        core_done;
-    wire        round_done;   // debug only
 
     // Top-level bookkeeping: “have we loaded a full key/state yet?”
     reg key_loaded;
@@ -91,8 +82,7 @@ module aes (
 
         .start          (core_start),
         .state_out      (core_state_out),
-        .done           (core_done),
-        .round_done     (round_done)
+        .done           (core_done)
     );
 
     // ------------------------------------------------------------------------
@@ -117,7 +107,6 @@ module aes (
         if (!rst_n) begin
             cState          <= IDLE;
             byte_cnt        <= 6'd0;
-            encdec_latched  <= 1'b0;
 
             core_ld_key_valid   <= 1'b0;
             core_ld_key_byte    <= 8'd0;
@@ -143,7 +132,6 @@ module aes (
                 // IDLE: accept commands (load key, load text, start, write)
                 // ----------------------------------------------------------
                 IDLE: begin
-                    encdec_latched <= encdec;
                     byte_cnt       <= 6'd0;
 
                     // Start encryption (HASH_OP) — only if both key & text loaded
@@ -250,6 +238,6 @@ module aes (
         end
     end
 
-    wire _unused = &{addr, encdec_latched, round_done};
+    wire _unused = &{addr, encdec};
 
 endmodule

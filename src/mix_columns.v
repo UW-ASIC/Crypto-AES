@@ -53,6 +53,5 @@ wire [31:0] col3 = mix_col(s[12], s[13], s[14], s[15]);
 wire [127:0] mixed = {col0, col1, col2, col3}; 
 
 assign state_out = final_round ? state_in : mixed;
-
     
 endmodule

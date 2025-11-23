@@ -18,8 +18,7 @@ module aes_core_rs (
     // Start encryption once key & state are fully loaded
     input  wire        start,
     output reg  [127:0] state_out,
-    output reg         done,
-    output wire        round_done
+    output reg         done
 );
 
     // ------------------------------------------------------------------------
@@ -50,8 +49,6 @@ module aes_core_rs (
     localparam S_ARK  = 3'd4;
     localparam S_KS   = 3'd5;
     localparam S_OUT  = 3'd6;
-
-    assign round_done = (st == S_ARK);
 
     // ------------------------------------------------------------------------
     // Single shared S-box
