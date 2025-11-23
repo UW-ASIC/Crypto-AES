@@ -35,14 +35,8 @@ module tt_um_uwasic_onboarding_aes (
     wire       data_valid;
     wire       ack_valid;
 
-wire [1:0] module_source_id_x;
-    // Tie opcode / IDs to some fixed operation for now (e.g. simple test mode)
-    wire [1:0] opcode   = 2'b11; // OP_HASH in your test
-    wire [1:0] source_id = 2'b00;
-    wire [1:0] dest_id   = 2'b10;
-    wire       encdec    = 1'b0;
-    wire [23:0] addr     = 24'h000000;
-
+    wire [1:0] module_source_id_x;
+    
     aes aes_inst (
         .clk        (clk),
         .rst_n      (rst_n),
@@ -54,13 +48,7 @@ wire [1:0] module_source_id_x;
         .data_valid (data_valid),
         .ack_ready  (ack_ready),
         .ack_valid  (ack_valid),
-        .module_source_id(module_source_id_x),  // ignore in TT context
-
-        .opcode     (opcode),
-        .source_id  (source_id),
-        .dest_id    (dest_id),
-        .encdec     (encdec),
-        .addr       (addr)
+        .module_source_id(module_source_id_x) // ignore in TT context
     );
 
     // For now, just drive uo_out with the AES data_out

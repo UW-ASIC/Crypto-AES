@@ -218,7 +218,6 @@ module aes_core_rs (
 
         end else begin
             // defaults each cycle
-            done      <= 1'b0;
             sb_start  <= 1'b0;
             rk_start  <= 1'b0;
 
@@ -228,7 +227,6 @@ module aes_core_rs (
             if (st == S_IDLE && !start) begin
                 // Key load (MSB-first)
                 if (ld_key_valid && ld_key_ready) begin
-
                     case (key_idx[1:0])
                         2'd0: key_buf[key_idx[4:2]][31:24] <= ld_key_byte;
                         2'd1: key_buf[key_idx[4:2]][23:16] <= ld_key_byte;
@@ -284,6 +282,7 @@ module aes_core_rs (
                         // next we’ll snapshot state and start SB+SR
                         st <= S_INIT;
                     end
+                    done <= 0;
                 end
                 // ----------------------------------------------------------
                 // INIT: snapshot state_reg and start SB+SR
@@ -364,7 +363,10 @@ module aes_core_rs (
                 // ----------------------------------------------------------
                 S_OUT: begin
                     state_idx  <= 4'd0;
+                    key_idx  <= 4'd0;
                     state_full <= 1'b0;
+                    key_full <= 0;
+                    state_full <= 0;
                     st         <= S_IDLE;
                 end
 

@@ -13,15 +13,10 @@ module aes (
     // ACK BUS
     input  wire       ack_ready,
     output wire       ack_valid,
-    output wire [1:0] module_source_id,
-
-    // TRANSACTION BUS
-    input  wire [1:0]  opcode,
-    input  wire [1:0]  source_id,
-    input  wire [1:0]  dest_id,
-    input  wire        encdec,
-    input  wire [23:0] addr
+    output wire [1:0] module_source_id
 );
+
+
     // Opcodes 
     localparam [1:0] OP_LOAD_KEY    = 2'b00;
     localparam [1:0] OP_LOAD_TEXT   = 2'b01;
@@ -58,6 +53,7 @@ module aes (
     reg         core_start;
     wire [127:0] core_state_out;
     wire        core_done;
+    reg        core_finished;
 
     // Top-level bookkeeping: “have we loaded a full key/state yet?”
     reg key_loaded;
@@ -66,6 +62,13 @@ module aes (
     // TX result path
     reg  [7:0] byte_out;
     reg        byte_valid;
+
+    // decode header from first beat only
+    reg  [7:0] header_byte;
+    reg  [2:0] hdr_cnt;       // 0..3: header + 3 addr beats
+    wire [1:0] opcode    = header_byte[1:0];
+    wire [1:0] source_id = header_byte[3:2];
+    wire [1:0] dest_id   = header_byte[5:4];
 
     // Core instance
     aes_core_rs aes_op (
@@ -91,9 +94,13 @@ module aes (
     // We’re "ready" to accept a byte only when:
     //   - we’re in a load state, and
     //   - the core can accept a byte for that path.
-    assign ready_in =
-           ((cState == RD_KEY)  && core_ld_key_ready)   ||
+    wire ready_payload =
+           ((cState == RD_KEY)  && core_ld_key_ready) ||
            ((cState == RD_TEXT) && core_ld_state_ready);
+
+    assign ready_in = (cState == IDLE && hdr_cnt < 3'd4)
+                    ? 1'b1
+                    : ready_payload;
 
     assign ack_valid        = (cState == ACK_HOLD);
     assign module_source_id = AES_ID;
@@ -107,6 +114,8 @@ module aes (
         if (!rst_n) begin
             cState          <= IDLE;
             byte_cnt        <= 6'd0;
+            hdr_cnt         <= 3'd0;
+            header_byte     <= 8'd0;
 
             core_ld_key_valid   <= 1'b0;
             core_ld_key_byte    <= 8'd0;
@@ -133,34 +142,45 @@ module aes (
                 // ----------------------------------------------------------
                 IDLE: begin
                     byte_cnt       <= 6'd0;
-
-                    // Start encryption (HASH_OP) — only if both key & text loaded
-                    if (dest_id == AES_ID && opcode == OP_HASH) begin
-                        if (key_loaded && text_loaded) begin
-                            core_start  <= 1'b1;   // 1-cycle pulse
-                            cState      <= HASH_OP;
-                            text_loaded <= 1'b0;   // consume current plaintext
+                    if (valid_in && (hdr_cnt < 3'd4)) begin
+                        if (hdr_cnt == 3'd0) begin
+                            // first beat: latch header
+                            header_byte <= data_in;
                         end
-                    end
-                    // Load key
-                    else if (source_id == MEM_ID && dest_id == AES_ID &&
-                             opcode == OP_LOAD_KEY && !key_loaded) begin
-                        cState    <= RD_KEY;
-                        byte_cnt  <= 6'd0;
-                    end
-                    // Load plaintext
-                    else if (source_id == MEM_ID && dest_id == AES_ID &&
-                             opcode == OP_LOAD_TEXT && !text_loaded) begin
-                        cState    <= RD_TEXT;
-                        byte_cnt  <= 6'd0;
-                    end
-                    // Write result (only after core_done)
-                    else if (opcode  == OP_WRITE_RESULT &&
-                             source_id== AES_ID &&
-                             dest_id  == MEM_ID &&
-                             core_done) begin
-                        cState   <= TX_RES;
-                        byte_cnt <= 6'd0;
+
+                        hdr_cnt <= hdr_cnt + 3'd1;
+
+                        if (hdr_cnt == 3'd3) begin
+                            hdr_cnt <= 3'd0;
+                            // Start encryption (HASH_OP) — only if both key & text loaded
+                            if (dest_id == AES_ID && opcode == OP_HASH) begin
+                                if (key_loaded && text_loaded) begin
+                                    core_start  <= 1'b1;   // 1-cycle pulse
+                                    cState      <= HASH_OP;
+                                    text_loaded <= 1'b0;   // consume current plaintext
+                                end
+                            end
+                            // Load key
+                            else if (source_id == MEM_ID && dest_id == AES_ID &&
+                                    opcode == OP_LOAD_KEY && !key_loaded) begin
+                                cState    <= RD_KEY;
+                                byte_cnt  <= 6'd0;
+                            end
+                            // Load plaintext
+                            else if (source_id == MEM_ID && dest_id == AES_ID &&
+                                    opcode == OP_LOAD_TEXT && !text_loaded) begin
+                                cState    <= RD_TEXT;
+                                byte_cnt  <= 6'd0;
+                            end
+                            // Write result (only after core_done)
+                            else if (opcode  == OP_WRITE_RESULT &&
+                                    source_id== AES_ID &&
+                                    dest_id  == MEM_ID &&
+                                    core_finished) begin
+                                cState   <= TX_RES;
+                                byte_cnt <= 6'd0;
+                            end
+                        end
                     end
                 end
 
@@ -203,7 +223,8 @@ module aes (
                 // ----------------------------------------------------------
                 HASH_OP: begin
                     if (core_done) begin
-                        cState   <= TX_RES;
+                        core_finished <= 1;
+                        cState   <= IDLE;
                         byte_cnt <= 6'd0;
                     end
                 end
@@ -230,6 +251,10 @@ module aes (
                 ACK_HOLD: begin
                     if (ack_ready) begin
                         cState <= IDLE;
+                        key_loaded <= 1'b0;   // probably want to preserve key?
+                        text_loaded <= 1'b0;
+                        hdr_cnt <= 0;
+                        byte_cnt <= 0;
                     end
                 end
 
@@ -237,7 +262,4 @@ module aes (
             endcase
         end
     end
-
-    wire _unused = &{addr, encdec};
-
 endmodule
