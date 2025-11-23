@@ -5,13 +5,74 @@ from cocotb.triggers import ClockCycles, RisingEdge
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 
-# Constants for transaction bus
+# Constants for transaction fields encoded in header byte
 MEM_ID          = 0b00
 AES_ID          = 0b10
 OP_LOAD_KEY     = 0b00
 OP_LOAD_TEXT    = 0b01
 OP_WRITE_RESULT = 0b10
 OP_HASH         = 0b11
+
+
+def make_header(opcode: int, source_id: int, dest_id: int) -> int:
+    """
+    Build header byte according to the aes.v decode:
+
+        header_byte[1:0] -> opcode
+        header_byte[3:2] -> source_id
+        header_byte[5:4] -> dest_id
+        header_byte[7:6] -> unused/0
+    """
+    return ((dest_id & 0x3) << 4) | ((source_id & 0x3) << 2) | (opcode & 0x3)
+
+
+async def send_header_and_payload(aes, opcode: int, source_id: int,
+                                  dest_id: int, payload: bytes, addr: int):
+    """
+    Send one transaction:
+
+      beat 0: header byte
+      beat 1: addr[23:16]
+      beat 2: addr[15:8]
+      beat 3: addr[7:0]
+      then:   payload bytes (if any)
+
+    All over (data_in, valid_in, ready_in).
+    """
+
+    header = make_header(opcode, source_id, dest_id)
+    beats = [
+        header,
+        (addr >> 16) & 0xFF,
+        (addr >> 8) & 0xFF,
+        addr & 0xFF,
+    ]
+
+    # Header + 3 address beats
+    for b in beats:
+        # wait until DUT is ready
+        while aes.ready_in.value == 0:
+            await RisingEdge(aes.clk)
+
+        aes.data_in.value = b
+        aes.valid_in.value = 1
+        await RisingEdge(aes.clk)
+
+    # Now header is done; deassert valid
+    aes.valid_in.value = 0
+    await RisingEdge(aes.clk)
+
+    # Payload (for LOAD_KEY / LOAD_TEXT); no payload for HASH / WRITE_RESULT
+    for b in payload:
+        while aes.ready_in.value == 0:
+            await RisingEdge(aes.clk)
+
+        aes.data_in.value = b
+        aes.valid_in.value = 1
+        await RisingEdge(aes.clk)
+
+    aes.valid_in.value = 0
+    await RisingEdge(aes.clk)
 
 
 # ----------------------------------------------------------------------
@@ -28,11 +89,6 @@ async def reset_dut(dut):
     aes.data_in.value    = 0
     aes.data_ready.value = 0
     aes.ack_ready.value  = 0
-    aes.opcode.value     = 0
-    aes.source_id.value  = 0
-    aes.dest_id.value    = 0
-    aes.encdec.value     = 0
-    aes.addr.value       = 0
 
     await ClockCycles(aes.clk, 5)
     aes.rst_n.value = 1
@@ -44,35 +100,25 @@ async def reset_dut(dut):
 # Load 32-byte key into top-level AES
 # ----------------------------------------------------------------------
 async def load_key(dut, key_bytes: bytes):
-    """Load 32-byte (256-bit) key into AES module (new arch)"""
+    """Load 32-byte (256-bit) key into AES module (new bus protocol)"""
     assert len(key_bytes) == 32
 
     aes = getattr(dut, "aes_inst", dut)
 
     aes._log.info(f"Loading 256-bit key: {key_bytes.hex()}")
 
-    aes.opcode.value    = OP_LOAD_KEY
-    aes.source_id.value = MEM_ID
-    aes.dest_id.value   = AES_ID
-    aes.addr.value      = 0x1000
+    # Old addr was 0x1000; RTL ignores addr, but keep it for consistency
+    addr = 0x001000
 
-    # Wait until AES is ready to accept key bytes
-    for _ in range(200):
-        if aes.ready_in.value == 1:
-            break
-        await RisingEdge(aes.clk)
+    await send_header_and_payload(
+        aes,
+        opcode=OP_LOAD_KEY,
+        source_id=MEM_ID,
+        dest_id=AES_ID,
+        payload=key_bytes,
+        addr=addr,
+    )
 
-    # Stream 32 bytes, respecting ready_in each cycle
-    for byte in key_bytes:
-        while aes.ready_in.value == 0:
-            await RisingEdge(aes.clk)
-
-        aes.data_in.value  = byte
-        aes.valid_in.value = 1
-        await RisingEdge(aes.clk)
-
-    # Deassert valid_in
-    aes.valid_in.value = 0
     await ClockCycles(aes.clk, 2)
 
 
@@ -80,34 +126,25 @@ async def load_key(dut, key_bytes: bytes):
 # Load 16-byte plaintext into top-level AES
 # ----------------------------------------------------------------------
 async def load_plaintext(dut, plaintext_bytes: bytes):
-    """Load 16-byte (128-bit) plaintext into AES module (new arch)"""
+    """Load 16-byte (128-bit) plaintext into AES module (new bus protocol)"""
     assert len(plaintext_bytes) == 16
 
     aes = getattr(dut, "aes_inst", dut)
 
     aes._log.info(f"Loading plaintext: {plaintext_bytes.hex()}")
 
-    aes.opcode.value    = OP_LOAD_TEXT
-    aes.source_id.value = MEM_ID
-    aes.dest_id.value   = AES_ID
-    aes.addr.value      = 0x2000
+    # Old addr was 0x2000; again, RTL ignores addr value
+    addr = 0x002000
 
-    # Wait for ready_in to go high
-    for _ in range(200):
-        if aes.ready_in.value == 1:
-            break
-        await RisingEdge(aes.clk)
+    await send_header_and_payload(
+        aes,
+        opcode=OP_LOAD_TEXT,
+        source_id=MEM_ID,
+        dest_id=AES_ID,
+        payload=plaintext_bytes,
+        addr=addr,
+    )
 
-    # Stream 16 bytes, respecting ready_in
-    for byte in plaintext_bytes:
-        while aes.ready_in.value == 0:
-            await RisingEdge(aes.clk)
-
-        aes.data_in.value  = byte
-        aes.valid_in.value = 1
-        await RisingEdge(aes.clk)
-
-    aes.valid_in.value = 0
     await ClockCycles(aes.clk, 2)
 
 
@@ -115,15 +152,25 @@ async def load_plaintext(dut, plaintext_bytes: bytes):
 # Kick off encryption
 # ----------------------------------------------------------------------
 async def start_encryption(dut):
-    """Start the AES encryption operation (new arch)"""
+    """Start the AES encryption operation (new bus protocol)"""
 
     aes = getattr(dut, "aes_inst", dut)
 
     aes._log.info("Starting encryption...")
-    aes.opcode.value    = OP_HASH
-    aes.source_id.value = MEM_ID  # not used by RTL, but set anyway
-    aes.dest_id.value   = AES_ID
-    aes.encdec.value    = 0  # encrypt
+
+    # HASH_OP has *no* payload: just header + 3 addr bytes.
+    addr = 0x000000
+
+    await send_header_and_payload(
+        aes,
+        opcode=OP_HASH,
+        source_id=MEM_ID,
+        dest_id=AES_ID,
+        payload=b"",
+        addr=addr,
+    )
+
+    # give the core a couple cycles to latch start
     await ClockCycles(aes.clk, 2)
 
 
@@ -131,18 +178,25 @@ async def start_encryption(dut):
 # Read 16-byte result (ciphertext) from AES module
 # ----------------------------------------------------------------------
 async def read_result(dut):
-    """Read 16-byte encryption result from AES module (new arch)"""
+    """Read 16-byte encryption result from AES module (new bus protocol)"""
 
     aes = getattr(dut, "aes_inst", dut)
 
     aes._log.info("Reading result...")
 
-    # Set up "read result" transaction (fields mostly informational now)
-    aes.opcode.value    = OP_WRITE_RESULT
-    aes.source_id.value = AES_ID
-    aes.dest_id.value   = MEM_ID
+    # First send WRITE_RESULT header + dummy addr
+    addr = 0x000000
 
-    # Assert READY for streaming
+    await send_header_and_payload(
+        aes,
+        opcode=OP_WRITE_RESULT,
+        source_id=AES_ID,
+        dest_id=MEM_ID,
+        payload=b"",
+        addr=addr,
+    )
+
+    # Now the wrapper should be in TX_RES; drive data_ready to pull bytes
     aes.data_ready.value = 1
     await RisingEdge(aes.clk)
 
@@ -151,6 +205,7 @@ async def read_result(dut):
     for i in range(16):
         # Wait until AES says the current byte is valid
         while aes.data_valid.value == 0:
+            aes._log.info("WAITING...")
             await RisingEdge(aes.clk)
 
         byte_val = int(aes.data_out.value)
@@ -237,7 +292,7 @@ async def test_aes_simple_pattern(dut):
 
     clock = Clock(aes.clk, 10, units="ns")
     cocotb.start_soon(clock.start())
-    await reset_dut(dut)
+    #await reset_dut(dut)
 
     # Simple patterns: key = 0x00..1F, plaintext = 0x20..2F
     key       = bytes(range(32))
