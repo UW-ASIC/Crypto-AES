@@ -21,7 +21,6 @@ project:
     - "sub_bytes.v"
     - "roundkey_gen.v"
     - "mix_columns.v"
-    - "shift_rows.v"
     - "project.v"
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
