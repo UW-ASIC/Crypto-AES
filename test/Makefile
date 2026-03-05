@@ -42,8 +42,8 @@ endif
 COMPILE_ARGS 		+= -I$(SRC_DIR)
 
 # Include the testbench sources:
-#VERILOG_SOURCES += $(PWD)/tb.v
-TOPLEVEL = tt_um_uwasic_onboarding_aes
+VERILOG_SOURCES += $(PWD)/tb.v
+TOPLEVEL = tb
 
 # MODULE is the basename of the Python test file
 MODULE = test_aes
