@@ -212,7 +212,7 @@ module sbox ( byte_in, byte_out );
     assign T7 = C[4] ~^ T6 ;
     assign T8 = C[2] ^ T4 ;
     assign T9 = C[1] ^ T2 ;
-    assign T10 = T3 ^ T5 ;
+    // assign T10 = T3 ^ T5 ;
     assign D[7] = T4 ;
     assign D[6] = T1 ;
     assign D[5] = T3 ;
