@@ -43,9 +43,10 @@ module GF_MULS_4 ( A, a, Al, Ah, aa, B, b, Bl, Bh, bb, Q );
     
     output [3:0] Q;
     wire
-    [1:0] ph, pl, ps, p;
+    // [1:0] ph, pl, ps, p;
+    [1:0] ph, pl, p;
     wire
-    t;
+    // t;
     GF_MULS_2 himul(A[3:2], Ah, B[3:2], Bh, ph);
     GF_MULS_2 lomul(A[1:0], Al, B[1:0], Bl, pl);
     GF_MULS_SCL_2 summul( a, aa, b, bb, p);
@@ -125,7 +126,8 @@ endmodule
     wire
     [3:0] a, b, c, d, p, q;
     wire
-    [1:0] sa, sb, sd, t; /* for shared factors in multipliers */
+    // [1:0] sa, sb, sd, t; /* for shared factors in multipliers */
+    [1:0] sa, sb, sd; /* for shared factors in multipliers */
     wire al, ah, aa, bl, bh, bb, dl, dh, dd; /* for shared factors */
     wire c1, c2, c3; /* for temp var */
 

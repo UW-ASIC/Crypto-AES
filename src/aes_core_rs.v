@@ -363,7 +363,7 @@ module aes_core_rs (
                 // ----------------------------------------------------------
                 S_OUT: begin
                     state_idx  <= 4'd0;
-                    key_idx  <= 4'd0;
+                    key_idx  <= 6'd0;
                     state_full <= 1'b0;
                     key_full <= 0;
                     state_full <= 0;
