@@ -29,7 +29,7 @@ module tt_um_uwasic_onboarding_aes (
     wire       valid_in  = ena;       // example: use ena as "valid"
     wire       data_ready = uio_in[1];
     wire       ack_ready  = uio_in[0];
-
+    // outputs
     wire [7:0] data_out;
     wire       ready_in;
     wire       data_valid;

@@ -22,7 +22,7 @@ module tb;
     reg  [23:0] addr;
 
     // instantiate your AES top
-    aes aes_inst (
+    aes dut (
         .clk(clk),
         .rst_n(rst_n),
         .data_in(data_in),
