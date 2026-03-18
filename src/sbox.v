@@ -45,7 +45,7 @@ module GF_MULS_4 ( A, a, Al, Ah, aa, B, b, Bl, Bh, bb, Q );
     wire
     // [1:0] ph, pl, ps, p;
     [1:0] ph, pl, p;
-    wire
+    // wire
     // t;
     GF_MULS_2 himul(A[3:2], Ah, B[3:2], Bh, ph);
     GF_MULS_2 lomul(A[1:0], Al, B[1:0], Bl, pl);
