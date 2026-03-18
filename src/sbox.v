@@ -230,5 +230,5 @@ module sbox ( byte_in, byte_out );
     // assign X[1] = T6 ;
     // assign X[0] = ~ C[2] ;
     // SELECT_NOT_8 sel_out( D, X, 1'b1, byte_out );
-    assign byte_out = D;
+    assign byte_out = ~ D;
  endmodule
