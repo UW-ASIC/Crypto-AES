@@ -27,8 +27,8 @@ module tt_um_uwasic_onboarding_aes (
     // For a minimal placeholder, you can just hook up aes but not fully use UI:
     wire [7:0] data_in   = ui_in;     // example
     wire       valid_in  = ena;       // example: use ena as "valid"
-    wire       data_ready = 1'b1;     // always ready to consume or produce
-    wire       ack_ready  = 1'b1;     // always ack
+    wire       data_ready = uio_in[1];
+    wire       ack_ready  = uio_in[0];
 
     wire [7:0] data_out;
     wire       ready_in;
@@ -57,6 +57,6 @@ module tt_um_uwasic_onboarding_aes (
     assign uio_out = {6'b0, data_valid, ready_in};
 
     // Mark unused signals to keep lint/synthesis happy
-    wire _unused = &{uio_in, 1'b0, ack_valid, module_source_id_x};
+    wire _unused = &{uio_in[7:2], 1'b0, ack_valid, module_source_id_x};
 
 endmodule
