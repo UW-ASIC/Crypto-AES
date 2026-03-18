@@ -168,7 +168,7 @@ endmodule
 module sbox ( byte_in, byte_out );
     input [7:0] byte_in;
     output [7:0] byte_out;
-    wire [7:0] B, C, D, X, Y, Z;
+    wire [7:0] B, C, D, Z; // X, Y,
     wire R1, R2, R3, R4, R5, R6, R7, R8, R9;
     wire T1, T2, T3, T4, T5, T6, T7, T8, T9, T10;
 
@@ -191,15 +191,16 @@ module sbox ( byte_in, byte_out );
     assign B[2] = ~ byte_in[0] ;
     assign B[1] = R4 ;
     assign B[0] = byte_in[2] ~^ R9 ;
-    assign Y[7] = R2 ;
-    assign Y[6] = byte_in[4] ^ R8 ;
-    assign Y[5] = byte_in[6] ^ byte_in[4] ;
-    assign Y[4] = R9 ;
-    assign Y[3] = byte_in[6] ~^ R2 ;
-    assign Y[2] = R7 ;
-    assign Y[1] = byte_in[4] ^ R6 ;
-    assign Y[0] = byte_in[1] ^ R5 ;
-    SELECT_NOT_8 sel_in( B, Y, 1, Z );
+    // assign Y[7] = R2 ;
+    // assign Y[6] = byte_in[4] ^ R8 ;
+    // assign Y[5] = byte_in[6] ^ byte_in[4] ;
+    // assign Y[4] = R9 ;
+    // assign Y[3] = byte_in[6] ~^ R2 ;
+    // assign Y[2] = R7 ;
+    // assign Y[1] = byte_in[4] ^ R6 ;
+    // assign Y[0] = byte_in[1] ^ R5 ;
+    // SELECT_NOT_8 sel_in( B, Y, 1'b1, Z );
+    assign Z = ~ B;
     GF_INV_8 inv( Z, C );
     /* change basis back from GF(2^8)/GF(2^4)/GF(2^2) to GF(2^8) */
     assign T1 = C[7] ^ C[3] ;
@@ -220,13 +221,14 @@ module sbox ( byte_in, byte_out );
     assign D[2] = T3 ^ T8 ;
     assign D[1] = T7 ;
     assign D[0] = T9 ;
-    assign X[7] = C[4] ~^ C[1] ;
-    assign X[6] = C[1] ^ T10 ;
-    assign X[5] = C[2] ^ T10 ;
-    assign X[4] = C[6] ~^ C[1] ;
-    assign X[3] = T8 ^ T9 ;
-    assign X[2] = C[7] ~^ T7 ;
-    assign X[1] = T6 ;
-    assign X[0] = ~ C[2] ;
-    SELECT_NOT_8 sel_out( D, X, 1, byte_out );
+    // assign X[7] = C[4] ~^ C[1] ;
+    // assign X[6] = C[1] ^ T10 ;
+    // assign X[5] = C[2] ^ T10 ;
+    // assign X[4] = C[6] ~^ C[1] ;
+    // assign X[3] = T8 ^ T9 ;
+    // assign X[2] = C[7] ~^ T7 ;
+    // assign X[1] = T6 ;
+    // assign X[0] = ~ C[2] ;
+    // SELECT_NOT_8 sel_out( D, X, 1'b1, byte_out );
+    assign byte_out = D;
  endmodule
