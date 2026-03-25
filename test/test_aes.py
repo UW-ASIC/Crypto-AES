@@ -85,7 +85,7 @@ async def reset_dut(dut):
     aes = getattr(dut, "aes_inst", dut)
 
     aes.rst_n.value      = 0
-    dut.valid_in.value   = 0
+    dut.ena.value        = 0
     aes.data_in.value    = 0
     aes.data_ready.value = 0
     aes.ack_ready.value  = 0
