@@ -51,7 +51,7 @@ async def send_header_and_payload(dut, opcode: int, source_id: int,
     # Header + 3 address beats
     for b in beats:
         # wait until DUT is ready
-        while dut.aes_inst.ready_in.value == 0:
+        while dut.uio_out[0].value == 0:
             await RisingEdge(dut.clk)
 
         dut.ui_in.value = b
@@ -64,7 +64,7 @@ async def send_header_and_payload(dut, opcode: int, source_id: int,
 
     # Payload (for LOAD_KEY / LOAD_TEXT); no payload for HASH / WRITE_RESULT
     for b in payload:
-        while dut.aes_inst.ready_in.value == 0:
+        while dut.uio_out[0].value == 0:
             await RisingEdge(dut.clk)
 
         dut.ui_in.value = b
@@ -204,7 +204,7 @@ async def read_result(dut):
 
     for i in range(16):
         # Wait until AES says the current byte is valid
-        while dut.aes_inst.data_valid.value == 0:
+        while dut.uio_out[1].value == 0:
             dut._log.info("WAITING...")
             await RisingEdge(dut.clk)
 
@@ -213,7 +213,7 @@ async def read_result(dut):
 
         dut._log.info(
             f"byte[{i}] data_ready={int(dut.uio_in[1].value)} "
-            f"data_valid={int(dut.aes_inst.data_valid.value)} "
+            f"data_valid={int(dut.uio_out[1].value)} "
             f"data_out=0x{byte_val:02x}"
         )
 
