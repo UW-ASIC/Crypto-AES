@@ -129,6 +129,7 @@ module aes (
 
             byte_out        <= 8'd0;
             byte_valid      <= 1'b0;
+            core_finished   <= 1'b0;
         end else begin
             // Defaults every cycle
             core_ld_key_valid   <= 1'b0;
@@ -255,6 +256,7 @@ module aes (
                         text_loaded <= 1'b0;
                         hdr_cnt <= 0;
                         byte_cnt <= 0;
+                        core_finished <= 1'b0;
                     end
                 end
 
