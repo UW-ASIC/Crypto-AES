@@ -64,7 +64,7 @@ module aes (
     reg        byte_valid;
 
     // decode header from first beat only
-    reg  [7:0] header_byte;
+    reg  [5:0] header_byte; //trim to 6b as we have don't care values
     reg  [2:0] hdr_cnt;       // 0..3: header + 3 addr beats
     wire [1:0] opcode    = header_byte[1:0];
     wire [1:0] source_id = header_byte[3:2];
@@ -115,7 +115,7 @@ module aes (
             cState          <= IDLE;
             byte_cnt        <= 6'd0;
             hdr_cnt         <= 3'd0;
-            header_byte     <= 8'd0;
+            header_byte     <= 6'd0;
 
             core_ld_key_valid   <= 1'b0;
             core_ld_key_byte    <= 8'd0;
@@ -146,7 +146,7 @@ module aes (
                     if (valid_in && (hdr_cnt < 3'd4)) begin
                         if (hdr_cnt == 3'd0) begin
                             // first beat: latch header
-                            header_byte <= data_in;
+                            header_byte <= data_in[5:0];
                         end
 
                         hdr_cnt <= hdr_cnt + 3'd1;
@@ -256,7 +256,7 @@ module aes (
                         text_loaded <= 1'b0;
                         hdr_cnt <= 0;
                         byte_cnt <= 0;
-                        core_finished <= 0;
+                        core_finished <= 1'b0;
                     end
                 end
 

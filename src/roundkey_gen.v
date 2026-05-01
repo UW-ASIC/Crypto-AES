@@ -19,15 +19,16 @@ module roundkeygen_1lane (
     input  wire [7:0]  sbox_out
 );
     // Rcon table
-    wire [31:0] rcon [0:7];
-    assign rcon[0] = 32'h01_00_00_00;
-    assign rcon[1] = 32'h02_00_00_00;
-    assign rcon[2] = 32'h04_00_00_00;
-    assign rcon[3] = 32'h08_00_00_00;
-    assign rcon[4] = 32'h10_00_00_00;
-    assign rcon[5] = 32'h20_00_00_00;
-    assign rcon[6] = 32'h40_00_00_00;
-    assign rcon[7] = 32'h80_00_00_00;
+    // wire [31:0] rcon [0:7];
+    // assign rcon[0] = 32'h01_00_00_00;
+    // assign rcon[1] = 32'h02_00_00_00;
+    // assign rcon[2] = 32'h04_00_00_00;
+    // assign rcon[3] = 32'h08_00_00_00;
+    // assign rcon[4] = 32'h10_00_00_00;
+    // assign rcon[5] = 32'h20_00_00_00;
+    // assign rcon[6] = 32'h40_00_00_00;
+    // assign rcon[7] = 32'h80_00_00_00;
+    wire [7:0] rcon_hi;
 
     function automatic [31:0] rotword (input [31:0] w);
         rotword = {w[23:0], w[31:24]};
@@ -47,8 +48,8 @@ module roundkeygen_1lane (
     wire [31:0] subword_new = {sub_word[23:0], sbox_out};
 
     // t = SubWord (optionally XOR Rcon)
-    wire [31:0] t_word = subword_new ^
-                        (use_rcon ? rcon[rcon_idx] : 32'h0000_0000);
+    assign rcon_hi = 8'h01 << rcon_idx;
+    wire [31:0] t_word = {subword_new[31:24] ^ (use_rcon ? rcon_hi : 8'h00), subword_new[23:0]};
 
     // next quartet values
     wire [31:0] w8_next  = w0 ^ t_word;

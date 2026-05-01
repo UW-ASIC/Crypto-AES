@@ -26,7 +26,7 @@ def make_header(opcode: int, source_id: int, dest_id: int) -> int:
     return ((dest_id & 0x3) << 4) | ((source_id & 0x3) << 2) | (opcode & 0x3)
 
 
-async def send_header_and_payload(aes, opcode: int, source_id: int,
+async def send_header_and_payload(dut, opcode: int, source_id: int,
                                   dest_id: int, payload: bytes, addr: int):
     """
     Send one transaction:
@@ -51,28 +51,28 @@ async def send_header_and_payload(aes, opcode: int, source_id: int,
     # Header + 3 address beats
     for b in beats:
         # wait until DUT is ready
-        while aes.ready_in.value == 0:
-            await RisingEdge(aes.clk)
+        while dut.uio_out[0].value == 0:
+            await RisingEdge(dut.clk)
 
-        aes.data_in.value = b
-        aes.valid_in.value = 1
-        await RisingEdge(aes.clk)
+        dut.ui_in.value = b
+        dut.ena.value = 1
+        await RisingEdge(dut.clk)
 
     # Now header is done; deassert valid
-    aes.valid_in.value = 0
-    await RisingEdge(aes.clk)
+    dut.ena.value = 0
+    await RisingEdge(dut.clk)
 
     # Payload (for LOAD_KEY / LOAD_TEXT); no payload for HASH / WRITE_RESULT
     for b in payload:
-        while aes.ready_in.value == 0:
-            await RisingEdge(aes.clk)
+        while dut.uio_out[0].value == 0:
+            await RisingEdge(dut.clk)
 
-        aes.data_in.value = b
-        aes.valid_in.value = 1
-        await RisingEdge(aes.clk)
+        dut.ui_in.value = b
+        dut.ena.value = 1
+        await RisingEdge(dut.clk)
 
-    aes.valid_in.value = 0
-    await RisingEdge(aes.clk)
+    dut.ena.value = 0
+    await RisingEdge(dut.clk)
 
 
 # ----------------------------------------------------------------------
@@ -82,18 +82,17 @@ async def reset_dut(dut):
     """Reset the DUT"""
 
     # Use inner AES instance if it exists, otherwise use top directly
-    aes = getattr(dut, "aes_inst", dut)
+    # aes = getattr(dut, "aes_inst", dut)
 
-    aes.rst_n.value      = 0
-    aes.valid_in.value   = 0
-    aes.data_in.value    = 0
-    aes.data_ready.value = 0
-    aes.ack_ready.value  = 0
+    dut.rst_n.value      = 0
+    dut.ena.value        = 0
+    dut.ui_in.value      = 0
+    dut.uio_in.value     = 0
 
-    await ClockCycles(aes.clk, 5)
-    aes.rst_n.value = 1
-    await ClockCycles(aes.clk, 2)
-    aes._log.info("Reset complete")
+    await ClockCycles(dut.clk, 5)
+    dut.rst_n.value = 1
+    await ClockCycles(dut.clk, 2)
+    dut._log.info("Reset complete")
 
 
 # ----------------------------------------------------------------------
@@ -103,15 +102,15 @@ async def load_key(dut, key_bytes: bytes):
     """Load 32-byte (256-bit) key into AES module (new bus protocol)"""
     assert len(key_bytes) == 32
 
-    aes = getattr(dut, "aes_inst", dut)
+    # aes = getattr(dut, "aes_inst", dut)
 
-    aes._log.info(f"Loading 256-bit key: {key_bytes.hex()}")
+    dut._log.info(f"Loading 256-bit key: {key_bytes.hex()}")
 
     # Old addr was 0x1000; RTL ignores addr, but keep it for consistency
     addr = 0x001000
 
     await send_header_and_payload(
-        aes,
+        dut,
         opcode=OP_LOAD_KEY,
         source_id=MEM_ID,
         dest_id=AES_ID,
@@ -119,7 +118,7 @@ async def load_key(dut, key_bytes: bytes):
         addr=addr,
     )
 
-    await ClockCycles(aes.clk, 2)
+    await ClockCycles(dut.clk, 2)
 
 
 # ----------------------------------------------------------------------
@@ -129,15 +128,15 @@ async def load_plaintext(dut, plaintext_bytes: bytes):
     """Load 16-byte (128-bit) plaintext into AES module (new bus protocol)"""
     assert len(plaintext_bytes) == 16
 
-    aes = getattr(dut, "aes_inst", dut)
+    # aes = getattr(dut, "aes_inst", dut)
 
-    aes._log.info(f"Loading plaintext: {plaintext_bytes.hex()}")
+    dut._log.info(f"Loading plaintext: {plaintext_bytes.hex()}")
 
     # Old addr was 0x2000; again, RTL ignores addr value
     addr = 0x002000
 
     await send_header_and_payload(
-        aes,
+        dut,
         opcode=OP_LOAD_TEXT,
         source_id=MEM_ID,
         dest_id=AES_ID,
@@ -145,7 +144,7 @@ async def load_plaintext(dut, plaintext_bytes: bytes):
         addr=addr,
     )
 
-    await ClockCycles(aes.clk, 2)
+    await ClockCycles(dut.clk, 2)
 
 
 # ----------------------------------------------------------------------
@@ -154,15 +153,15 @@ async def load_plaintext(dut, plaintext_bytes: bytes):
 async def start_encryption(dut):
     """Start the AES encryption operation (new bus protocol)"""
 
-    aes = getattr(dut, "aes_inst", dut)
+    # aes = getattr(dut, "aes_inst", dut)
 
-    aes._log.info("Starting encryption...")
+    dut._log.info("Starting encryption...")
 
     # HASH_OP has *no* payload: just header + 3 addr bytes.
     addr = 0x000000
 
     await send_header_and_payload(
-        aes,
+        dut,
         opcode=OP_HASH,
         source_id=MEM_ID,
         dest_id=AES_ID,
@@ -171,7 +170,7 @@ async def start_encryption(dut):
     )
 
     # give the core a couple cycles to latch start
-    await ClockCycles(aes.clk, 2)
+    await ClockCycles(dut.clk, 2)
 
 
 # ----------------------------------------------------------------------
@@ -180,15 +179,15 @@ async def start_encryption(dut):
 async def read_result(dut):
     """Read 16-byte encryption result from AES module (new bus protocol)"""
 
-    aes = getattr(dut, "aes_inst", dut)
+    # aes = getattr(dut, "aes_inst", dut)
 
-    aes._log.info("Reading result...")
+    dut._log.info("Reading result...")
 
     # First send WRITE_RESULT header + dummy addr
     addr = 0x000000
 
     await send_header_and_payload(
-        aes,
+        dut,
         opcode=OP_WRITE_RESULT,
         source_id=AES_ID,
         dest_id=MEM_ID,
@@ -197,39 +196,39 @@ async def read_result(dut):
     )
 
     # Now the wrapper should be in TX_RES; drive data_ready to pull bytes
-    aes.data_ready.value = 1
-    await RisingEdge(aes.clk)
+    dut.uio_in[1].value = 1
+    await RisingEdge(dut.clk)
 
     result = []
 
     for i in range(16):
         # Wait until AES says the current byte is valid
-        while aes.data_valid.value == 0:
-            aes._log.info("WAITING...")
-            await RisingEdge(aes.clk)
+        while dut.uio_out[1].value == 0:
+            dut._log.info("WAITING...")
+            await RisingEdge(dut.clk)
 
-        byte_val = int(aes.data_out.value)
+        byte_val = int(dut.uo_out.value)
         result.append(byte_val)
 
-        aes._log.info(
-            f"byte[{i}] data_ready={int(aes.data_ready.value)} "
-            f"data_valid={int(aes.data_valid.value)} "
+        dut._log.info(
+            f"byte[{i}] data_ready={int(dut.uio_in[1].value)} "
+            f"data_valid={int(dut.uio_out[1].value)} "
             f"data_out=0x{byte_val:02x}"
         )
 
-        await RisingEdge(aes.clk)
+        await RisingEdge(dut.clk)
 
     # Done streaming – deassert READY
-    aes.data_ready.value = 0
+    dut.uio_in[1].value = 0
 
     # ACK handshake to finish the transaction
-    aes.ack_ready.value = 1
+    dut.uio_in[0].value = 1
     for _ in range(100):
-        if aes.ack_valid.value == 1:
+        if dut.aes_inst.ack_valid.value == 1:
             break
-        await RisingEdge(aes.clk)
-    await RisingEdge(aes.clk)
-    aes.ack_ready.value = 0
+        await RisingEdge(dut.clk)
+    await RisingEdge(dut.clk)
+    dut.uio_in[0].value = 0
 
     return bytes(result)
 
