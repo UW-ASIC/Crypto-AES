@@ -227,7 +227,7 @@ async def read_result(dut):
     # ACK handshake to finish the transaction
     dut.uio_in[0].value = 1
     for _ in range(100):
-        if dut.aes_inst.ack_valid.value == 1:
+        if dut.dut.aes_inst.ack_valid.value == 1:
             break
         await RisingEdge(dut.clk)
     await RisingEdge(dut.clk)

@@ -57,7 +57,6 @@ module tb ();
   initial begin
     $dumpfile("tb.vcd");
     $dumpvars(0, tb);
-    #1;
   end
 
   // Wire up the inputs and outputs:
