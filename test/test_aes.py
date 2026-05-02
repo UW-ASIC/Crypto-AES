@@ -251,10 +251,6 @@ async def test_aes_random_vectors(dut):
     cocotb.start_soon(clock.start())
     await reset_dut(dut)
 
-    for i in range(10):
-        await RisingEdge(dut.clk)
-        print(f"cycle {i}: uio_out={dut.uio_out.value} uo_out={dut.uo_out.value} rst_n={dut.rst_n.value}")
-
     # Random key (256-bit) and plaintext (128-bit)
     key       = get_random_bytes(32)
     plaintext = get_random_bytes(16)
