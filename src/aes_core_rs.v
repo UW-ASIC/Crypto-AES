@@ -17,17 +17,18 @@ module aes_core_rs (
 
     // Start encryption once key & state are fully loaded
     input  wire        start,
-    output reg  [127:0] state_out,
+    output wire  [127:0] state_out,
     output reg         done
 );
 
     // ------------------------------------------------------------------------
     // Internal storage for key & state
     // ------------------------------------------------------------------------
-    reg [127:0] state_load;      // loaded AES state 
+    // reg [127:0] state_load;      // loaded AES state 
     reg [127:0] state_reg;      // current AES state (in-place updated)
     reg [127:0] sb_src_reg;     // snapshot before SubBytes+ShiftRows
     reg [127:0] state_reg_next;
+    // goal: collapse state registers where possible.
 
     reg [5:0]   key_idx;
     reg         key_full;
@@ -166,7 +167,7 @@ module aes_core_rs (
 
         // 1) Initial AddRoundKey in S_IDLE when we see start
         if (st == S_IDLE && start && key_full && state_full) begin
-            state_reg_next = state_load ^ { key_buf[0], key_buf[1],
+            state_reg_next = state_reg ^ { key_buf[0], key_buf[1],
                                             key_buf[2], key_buf[3] };
         end
 
@@ -194,13 +195,13 @@ module aes_core_rs (
             round       <= 4'd0;
             final_round <= 1'b0;
             done        <= 1'b0;
-            state_out   <= 128'd0;
+            // state_out   <= 128'd0;
 
             // state/key storage
             key_idx     <= 6'd0;
             key_full    <= 1'b0;
 
-            state_load  <= 128'd0;
+            // state_load  <= 128'd0;
             state_reg   <= 128'd0;
             sb_src_reg  <= 128'd0;
             state_idx   <= 4'd0;
@@ -245,7 +246,7 @@ module aes_core_rs (
                 // Shift-register style state load (MSB-first overall)
                 if (ld_state_valid && ld_state_ready) begin
                     // shift left by 8 bits, insert new byte at LSB
-                    state_load <= { state_load[119:0], ld_state_byte };
+                    state_reg <= { state_reg[119:0], ld_state_byte };
 
                     if (state_idx == 4'd15) begin
                         state_full <= 1'b1;
@@ -253,8 +254,9 @@ module aes_core_rs (
                         state_idx <= state_idx + 4'd1;
                     end
                 end
+            end else begin
+                state_reg <= state_reg_next;
             end
-            state_reg <= state_reg_next;
             // --------------------------------------------------------------
             // AES control FSM
             // --------------------------------------------------------------
@@ -320,7 +322,7 @@ module aes_core_rs (
                 S_ARK: begin
                     if (round == 4'd14) begin
                         state_reg <= mc_out ^ curr_rkey;
-                        state_out <= mc_out ^ curr_rkey;
+                        // state_out <= mc_out ^ curr_rkey;
                         done      <= 1'b1;
                         st        <= S_OUT;
                     end else begin
@@ -375,5 +377,7 @@ module aes_core_rs (
             endcase
         end
     end
+
+assign state_out = state_reg;
 
 endmodule
