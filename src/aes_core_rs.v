@@ -174,7 +174,7 @@ module aes_core_rs (
         // 2) SubBytes/ShiftRows byte write in S_SB (overwrites one byte)
         if (st == S_SB && sb_we) begin
             // update only the selected byte, keep others
-            state_reg_next[127 - ({3'b0, sb_idx}<<3) -: 8] = sb_byte;
+            state_reg_next[127 - sb_idx*8 -: 8] = sb_byte;
         end
 
         // 3) AddRoundKey after MixColumns in S_ARK (overwrites entire state)

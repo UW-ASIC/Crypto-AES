@@ -236,7 +236,7 @@ module aes (
                 TX_RES: begin
                     if (data_ready) begin
                         byte_valid <= 1'b1;
-                        byte_out   <= core_state_out[127 - ({1'b0,byte_cnt}<<3) -: 8];
+                        byte_out   <= core_state_out[127 - byte_cnt*8 -: 8];
                         byte_cnt   <= byte_cnt + 1'b1;
 
                         if (byte_cnt == 6'd15) begin
