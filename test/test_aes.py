@@ -1,6 +1,6 @@
 import cocotb
 from cocotb.clock import Clock
-from cocotb.triggers import ClockCycles, RisingEdge
+from cocotb.triggers import ClockCycles, RisingEdge, ReadOnly
 
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
@@ -206,6 +206,8 @@ async def read_result(dut):
         while dut.uio_out[1].value == 0:
             dut._log.info("WAITING...")
             await RisingEdge(dut.clk)
+
+        await ReadOnly()
 
         print(dut.uo_out.value)
         byte_val = int(dut.uo_out.value)
