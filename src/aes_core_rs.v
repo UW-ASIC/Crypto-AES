@@ -177,9 +177,9 @@ module aes_core_rs (
         end
 
         // 3) AddRoundKey after MixColumns in S_ARK (overwrites entire state)
-        if (st == S_ARK) begin
-            state_reg_next = mc_out ^ curr_rkey;
-        end
+        // if (st == S_ARK) begin
+        //     state_reg_next = mc_out ^ curr_rkey;
+        // end
     end
 
     integer i;
@@ -319,12 +319,12 @@ module aes_core_rs (
                 // ----------------------------------------------------------
                 S_ARK: begin
                     if (round == 4'd14) begin
-                        //state_reg <= mc_out ^ curr_rkey;
+                        state_reg <= mc_out ^ curr_rkey;
                         state_out <= mc_out ^ curr_rkey;
                         done      <= 1'b1;
                         st        <= S_OUT;
                     end else begin
-                        //state_reg <= mc_out ^ curr_rkey;
+                        state_reg <= mc_out ^ curr_rkey;
                         rk_started<= 1'b0;
                         st        <= S_KS;
                     end

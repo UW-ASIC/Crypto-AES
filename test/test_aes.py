@@ -207,7 +207,7 @@ async def read_result(dut):
             dut._log.info("WAITING...")
             await RisingEdge(dut.clk)
 
-        await ReadOnly()
+        # await ReadOnly()
 
         print(dut.uo_out.value)
         byte_val = int(dut.uo_out.value)
