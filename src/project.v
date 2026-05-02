@@ -54,7 +54,7 @@ module tt_um_uwasic_onboarding_aes (
     // For now, just drive uo_out with the AES data_out
     // plus maybe some status bits on uio_out.
     assign uo_out  = data_valid ? data_out : 8'b0;
-    assign uio_out = {6'b0, data_valid, ready_in};
+    assign uio_out = {5'b0, ack_valid, data_valid, ready_in};
 
     // Mark unused signals to keep lint/synthesis happy
     wire _unused = &{uio_in[7:2], 1'b0, ack_valid, module_source_id_x};
